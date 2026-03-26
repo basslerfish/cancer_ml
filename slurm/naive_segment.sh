@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=naive_segment
-#SBATCH --output=/home/mbassler/slurm_logs/dlwp/%x_%j.log
+#SBATCH --output=/home/mbassler/slurm_logs/cancer_ml/%x_%j.log
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --nodes=1
@@ -23,14 +23,13 @@ echo "---INSTALLING PACKAGES---"
 pip install --user pandas matplotlib numpy scipy keras_hub
 pip install --user -e "$HOME"/github/cancer_ml
 
-#
-echo "---Copying files---"
+#COpy files
+echo "---COPYING FILES---"
 mkdir -p "$TMPDIR"/data
 cp -r "$HOME"/data/cancer/train_100 "$TMPDIR"/data
 
 #Run very simple script
 echo "---RUNNING PYTHON SCRIPT---"
-python "$HOME"/github/cancer_ml/scripts/cluster/check_backend.py
 python "$HOME"/github/cancer_ml/scripts/cluster/naive_segment.py \
   --data_dir "$TMPDIR"/data/train_100 \
   --output_dir "$HOME"/output/cancer_ml \
