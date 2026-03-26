@@ -83,7 +83,6 @@ post_gtv_im = ax.imshow(y[I_STATIC, :, :], vmin=0, vmax=1, cmap="Reds", alpha=0.
 plt.savefig(output / f"{org_name}_pre_post.png")
 
 print("---Animate---")
-
 def update(i_frame: int) -> None:
     """Update figure"""
     i_org = t[i_frame]
@@ -94,6 +93,7 @@ def update(i_frame: int) -> None:
     post_t1_im.set_array(X[i_frame, :, :])
     post_gtv_im.set_array(y[i_frame, :, :])
     axes[1].set_title(f"Post: {i_frame}/{X.shape[2]}")
+
 
 ani = FuncAnimation(fig, update, frames=X.shape[0], interval=50)
 ani.save(output / f"{org_name}_pre_post.gif")

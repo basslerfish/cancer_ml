@@ -8,14 +8,13 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from src.model import get_binary_cnn
+from src.model import get_simple_cnn
 
 # paths
 DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/train_100")
-SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/fits")
 TB_OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs")
-BATCH_SIZE = 16
+BATCH_SIZE = 4
 FILTER_SIZES = [32, 64, 128]
 EPOCHS = 50
 VAL_FRAC = 0.1
@@ -25,27 +24,16 @@ N_SAMPLES = 100
 print("---Load---")
 ds = tf.data.Dataset.load(str(DSET_FOLDER))
 for X, y in ds.take(1):
-    batch_shape = X.shape
-print(f"Image shape: {batch_shape}")
-if len(batch_shape) == 4:
-    input_shape = batch_shape[1:]
-else:
-    input_shape = batch_shape
+    data_shape = X.shape
+print(f"Image shape: {data_shape}")
+assert len(data_shape) == 4  # n_img, x, y, channels
+assert data_shape[3] == 1  #  we want a single channel
 
-# convert y so that for each T1 image in a stack, we simply check whether there is cancer or not
 print("---Convert---")
 def convert_y(some_X: tf.Tensor, some_y: tf.Tensor) -> tuple:
     """
-    Convert y to binary for each image in T1 frame.
-    Binary as in: cancer annotated or not
+    We want y as float32 (but save as bool for smaller dsets)
     """
-    some_y = tf.cast(some_y, tf.bool)
-    if some_y.ndim == 4:
-        some_y = tf.reduce_any(some_y, axis=(1, 2))
-    elif some_y.ndim == 3:
-        some_y = tf.reduce_any(some_y, axis=(0, 1))
-    else:
-        raise ValueError(f"{some_y.ndim=}")
     some_y = tf.cast(some_y, tf.float32)
     return some_X, some_y
 
@@ -62,7 +50,6 @@ train_ds = ds.take(train_samples)
 val_ds = ds.skip(train_samples)
 train_ds = train_ds.batch(BATCH_SIZE)
 val_ds = val_ds.batch(BATCH_SIZE)
-
 for X, y in train_ds.take(1):
     print("train", X.shape, y.shape)
 for X, y in val_ds.take(1):
@@ -73,24 +60,22 @@ print("---Compile---")
 optimizer = keras.optimizers.Adam()
 loss_fn = keras.losses.BinaryCrossentropy()
 metrics = [keras.metrics.BinaryAccuracy()]
-model = get_binary_cnn(input_shape, FILTER_SIZES)
+model = get_simple_cnn(data_shape, FILTER_SIZES)
 model.compile(
     optimizer=optimizer,
     loss=loss_fn,
     metrics=metrics,
 )
-print(model.summary(80))
-
 
 model_file = OUTPUT / "model.weights.h5"
 csv_file = OUTPUT / "model.csv"
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-tb_folder = TB_OUTPUT / "naive_binary" / date_str
+tb_folder = TB_OUTPUT / "naive_segment" / date_str
 callbacks = [
     keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
     keras.callbacks.CSVLogger(csv_file),
     keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
-#   keras.callbacks.EarlyStopping(patience=10),
+    keras.callbacks.EarlyStopping(patience=10),
 ]
 
 print("---Fit---")
