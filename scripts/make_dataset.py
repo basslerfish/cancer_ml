@@ -14,12 +14,12 @@ import pandas as pd
 import scipy.ndimage
 import tensorflow as tf
 
-from src.load import find_files, load_images
+from cancer_ml.load import find_files, load_images
 
 # params
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
 N_SAMPLES = 100
-TARGET_SHAPE = (128, 256, 256, 1)
+TARGET_SHAPE = (64, 128, 128, 1)
 NAME = "train"
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets")
 
@@ -28,7 +28,7 @@ folders = list(SOURCE.iterdir())
 folders = list(filter(lambda x: x.is_dir(), folders))
 folders_to_load = np.random.choice(folders, size=N_SAMPLES, replace=False)
 df = pd.DataFrame({"i": np.arange(folders_to_load.size), "sample": [x.name for x in folders_to_load]})
-df.to_csv(OUTPUT / f"{NAME}_{N_SAMPLES}.csv")
+
 t1_paths = []
 gtv_paths = []
 for folder in folders_to_load:
@@ -97,9 +97,15 @@ def map_func(t1_tf, gtv_tf) -> tuple:
 
 # save
 img_ds = path_ds.map(map_func, num_parallel_calls=tf.data.AUTOTUNE)
-save_dir = OUTPUT / f"{NAME}_{N_SAMPLES}"
+shape_str = "-".join([str(x) for x in TARGET_SHAPE[:-1]])
+print(f"Shape str: {shape_str}")
+folder_name = f"{NAME}_{N_SAMPLES}_{shape_str}"
+save_dir = OUTPUT / folder_name
 if save_dir.is_dir():
     shutil.rmtree(save_dir)
     print("Previous dset deleted.")
 img_ds.save(str(save_dir))
 print(f"{save_dir} saved")
+
+df.to_csv(OUTPUT / f"{folder_name}" / "samples.csv")
+

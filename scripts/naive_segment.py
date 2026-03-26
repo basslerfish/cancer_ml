@@ -3,19 +3,20 @@ Train a very simple CNN to predict whether a T1 slice contains cancer or not.
 This is not very useful, but computationally less expensive than segmentation.
 """
 import datetime
+import os
 from pathlib import Path
 
 import keras
 import tensorflow as tf
 
-from src.model import get_simple_cnn
+from cancer_ml.model import get_simple_cnn
 
 # paths
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/train_100")
-OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/fits")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/train_100_64-128-128")
+OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models")
 TB_OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs")
 BATCH_SIZE = 4
-FILTER_SIZES = [32, 64, 128]
+FILTER_SIZES = [32, 64]
 EPOCHS = 50
 VAL_FRAC = 0.1
 N_SAMPLES = 100
@@ -58,8 +59,8 @@ for X, y in val_ds.take(1):
 
 print("---Compile---")
 optimizer = keras.optimizers.Adam()
-loss_fn = keras.losses.BinaryCrossentropy()
-metrics = [keras.metrics.BinaryAccuracy()]
+loss_fn = keras.losses.Dice()
+metrics = [keras.metrics.BinaryIoU()]
 model = get_simple_cnn(data_shape, FILTER_SIZES)
 model.compile(
     optimizer=optimizer,
@@ -67,8 +68,10 @@ model.compile(
     metrics=metrics,
 )
 
-model_file = OUTPUT / "model.weights.h5"
-csv_file = OUTPUT / "model.csv"
+output = OUTPUT / "local"
+os.makedirs(output, exist_ok=True)
+model_file = output / "model.weights.h5"
+csv_file = output / "model.csv"
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 tb_folder = TB_OUTPUT / "naive_segment" / date_str
 callbacks = [

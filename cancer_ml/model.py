@@ -6,6 +6,8 @@ import keras
 from keras import layers
 import tensorflow as tf
 
+
+
 def get_simple_cnn(input_shape: tuple, filter_sizes: list) -> keras.Model:
     """
     Simple CNN model with 3D conv filters.
