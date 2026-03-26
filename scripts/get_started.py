@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from src.load import load_images
+from src.load import find_and_load
 
 # paths
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2/")
@@ -28,7 +28,7 @@ print(f"Random folder: {random_folder}")
 
 # load
 print("---Loading data---")
-t1_data, gtv_data = load_images(random_folder)
+t1_data, gtv_data = find_and_load(random_folder)
 
 dtypes = {"t1": t1_data, "gtv": gtv_data}
 for name, this_data in dtypes.items():

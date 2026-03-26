@@ -1,6 +1,8 @@
 keras
 torch
+tensorflow
 monai
 matplotlib
 pandas
 pillow
+scipy
