@@ -1,0 +1,6 @@
+keras
+torch
+monai
+matplotlib
+pandas
+pillow
