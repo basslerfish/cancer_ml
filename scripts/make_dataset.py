@@ -7,6 +7,7 @@ There are a lot of decisions here already.
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import scipy.ndimage
 import tensorflow as tf
 
@@ -22,7 +23,9 @@ OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets")
 # get paths
 folders = list(SOURCE.iterdir())
 folders = list(filter(lambda x: x.is_dir(), folders))
-folders_to_load = np.random.choice(folders, size=N_SAMPLES)
+folders_to_load = np.random.choice(folders, size=N_SAMPLES, replace=False)
+df = pd.DataFrame({"i": np.arange(folders_to_load.size), "sample": [x.name for x in folders_to_load]})
+df.to_csv(OUTPUT / f"{NAME}_{N_SAMPLES}.csv")
 t1_paths = []
 gtv_paths = []
 for folder in folders_to_load:
