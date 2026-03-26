@@ -8,8 +8,8 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from src.model import get_simple_cnn
-from src.utils import assert_gpu_available
+from cancer_ml.model import get_simple_cnn
+from cancer_ml.utils import assert_gpu_available
 
 # paths
 BATCH_SIZE = 4

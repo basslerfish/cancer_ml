@@ -7,5 +7,5 @@ setup(
     name="cancer_ml",  # The name of your package
     version="0.1.0",         # Version number
     description="Segment some cancer",  # A short description
-    packages=["src"],  # List of package directories
+    packages=["cancer_ml"],  # List of package directories
 )
