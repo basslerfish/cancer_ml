@@ -1,7 +1,10 @@
 """
 Let's see how the data has changed after preprocessing.
-Would be stupid to make a mistake here already
+Would be stupid to make a mistake here already.
+
+The new data shape is (n_img, x, y, n_channels) -> (128, 256, 256, 1)
 """
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -24,11 +27,21 @@ ds = tf.data.Dataset.load(str(DSET_FOLDER))
 df = pd.read_csv(DSET_CSV)
 
 # load first sample postprocessing
-for X, y in ds:
+for X, y in ds.take(1):
     break
 
 X = X.numpy()
 y = y.numpy()
+print(f"T1 data in dataset: {X.shape}")
+print(f"Segmentation data in dataset: {y.shape}")
+X = np.squeeze(X)  # remove empty channel dim
+y = np.squeeze(y)
+print(f"Datatype of y: {y.dtype}")
+y = y.astype(np.float32)
+
+n_labeled = np.sum(y)
+frac_labeled = n_labeled / y.size
+print(f"Frac labeled in y: {frac_labeled:.1%}")
 
 # load first sample preprocessing
 org_name = df["sample"].values[0]
@@ -36,7 +49,18 @@ print(f"Name of first sample: {org_name}")
 org_folder = SOURCE / org_name
 org_t1, org_gtv = find_and_load(org_folder)
 
+# figure out timeline
+z_org = org_t1.shape[2]
+z_new = X.shape[0]
+t = np.linspace(0, z_org - 1, z_new)
+t = t.astype(int)
+
 print("---Plot---")
+I_STATIC = 64
+output = OUTPUT / "examine"
+os.makedirs(output, exist_ok=True)
+i_static_org = t[I_STATIC]
+
 vmin, vmax = np.percentile(org_t1, [0.5, 99.5])
 org_gtv[org_gtv == 0] = np.nan
 y[y == 0] = np.nan
@@ -47,20 +71,18 @@ for ax in axes:
     ax.set_ylabel("y")
 
 ax = axes[0]
-ax.set_title("Pre")
-org_t1_im = ax.imshow(org_t1[:, :, 0],  cmap="gray", vmin=vmin, vmax=vmax)
-org_gtv_im = ax.imshow(org_gtv[:, :, 0], vmin=0, vmax=1, cmap="Reds", alpha=0.66)
+ax.set_title(f"Pre: {i_static_org}/{org_t1.shape[2]}")
+org_t1_im = ax.imshow(org_t1[:, :, i_static_org],  cmap="gray", vmin=vmin, vmax=vmax)
+org_gtv_im = ax.imshow(org_gtv[:, :, i_static_org], vmin=0, vmax=1, cmap="Reds", alpha=0.66)
 
 ax = axes[1]
-ax.set_title("Post")
-post_t1_im = ax.imshow(X[:, :, 0], vmin=-2, vmax=2, cmap="gray")
-post_gtv_im = ax.imshow(y[:, :, 0], vmin=0, vmax=1, cmap="Reds", alpha=0.66)
+ax.set_title(f"Post: {I_STATIC}/{X.shape[0]}")
+post_t1_im = ax.imshow(X[I_STATIC, :, :], vmin=-2, vmax=2, cmap="gray")
+post_gtv_im = ax.imshow(y[I_STATIC, :, :], vmin=0, vmax=1, cmap="Reds", alpha=0.66)
 
-z_org = org_t1.shape[2]
-z_new = X.shape[2]
-t = np.linspace(0, z_org - 1, z_new)
-t = t.astype(int)
+plt.savefig(output / f"{org_name}_pre_post.png")
 
+print("---Animate---")
 
 def update(i_frame: int) -> None:
     """Update figure"""
@@ -69,10 +91,10 @@ def update(i_frame: int) -> None:
     org_gtv_im.set_array(org_gtv[:, :, i_org])
     axes[0].set_title(f"Pre: {i_org}/{org_t1.shape[2]}")
 
-    post_t1_im.set_array(X[:, :, i_frame])
-    post_gtv_im.set_array(y[:, :, i_frame])
+    post_t1_im.set_array(X[i_frame, :, :])
+    post_gtv_im.set_array(y[i_frame, :, :])
     axes[1].set_title(f"Post: {i_frame}/{X.shape[2]}")
 
-ani = FuncAnimation(fig, update, frames=X.shape[-1], interval=50)
-ani.save(OUTPUT / f"{org_name}_pre_post.gif")
+ani = FuncAnimation(fig, update, frames=X.shape[0], interval=50)
+ani.save(output / f"{org_name}_pre_post.gif")
 plt.close()
