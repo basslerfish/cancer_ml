@@ -6,6 +6,25 @@ import keras
 import numpy as np
 from keras import layers
 
+class TverskyBCELoss(keras.losses.Loss):
+    def __init__(
+            self,
+            tversky_weight: float = 0.8,
+            beta: float = 0.8,
+            **kwargs,
+    ) -> None:
+        super().__init__(name="DiceBCELoss", **kwargs)
+        self.tversky_weight = tversky_weight
+        self.bce_weight = 1 - tversky_weight
+        alpha = 1 - beta
+        self.tversyk = keras.losses.Tversky(alpha=alpha, beta=beta)
+
+    def call(self, y_true, y_pred):
+        tversky_loss = self.tversyk(y_true, y_pred)
+        bce_loss = keras.losses.BinaryCrossentropy()(y_true, y_pred)
+        combined_loss = self.dice_weight * tversky_loss + self.bce_weight * bce_loss
+        return combined_loss
+
 
 class DiceBCELoss(keras.losses.Loss):
     """
@@ -23,8 +42,6 @@ class DiceBCELoss(keras.losses.Loss):
         bce_loss = keras.losses.BinaryCrossentropy()(y_true, y_pred)
         combined_loss = self.dice_weight * dice_loss + self.bce_weight * bce_loss
         return combined_loss
-
-
 
 
 def get_simple_cnn(
