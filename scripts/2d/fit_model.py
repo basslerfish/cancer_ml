@@ -12,13 +12,13 @@ from cancer_ml.models.two_dims import get_simple_cnn, get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
 
 # params
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/flattened")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_val15_test15_128-128")
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/")
 TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/")
-FILTER_SIZES = [16, 32]
+FILTER_SIZES = [16, 32, 64]
 N_EPOCHS = 50
 BATCH_SIZE = 64
-MODEL_TYPE = "advanced"  # simple / advanced
+MODEL_TYPE = "simple"  # simple / advanced
 
 # load data
 dsets = {}
@@ -66,7 +66,7 @@ model.compile(
 
 
 # fit
-model_id = f"flattened"
+model_id = "-".join([str(x) for x in FILTER_SIZES]) + "_" + "-".join([str(x) for x in input_shape])
 model_dir = OUTPUT / "2d" / model_id
 os.makedirs(model_dir, exist_ok=True)
 model_file = model_dir / "cnn.weights.h5"
