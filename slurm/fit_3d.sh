@@ -27,11 +27,12 @@ pip install --user -e "$HOME"/github/cancer_ml
 echo "---COPYING FILES---"
 mkdir -p "$TMPDIR"/data
 cp -r "$HOME"/data/cancer/samples500_val15_test15_128-128-64 "$TMPDIR"/data
+ls "$TMPDIR"/data
 
 #Run very simple script
 echo "---RUNNING PYTHON SCRIPT---"
 python "$HOME"/github/cancer_ml/scripts/cluster/fit_3d_model.py \
-  --data_dir "$TMPDIR"/data/cancer/samples500_val15_test15_128-128-64 \
+  --data_dir "$TMPDIR"/data/samples500_val15_test15_128-128-64 \
   --output_dir "$HOME"/output/cancer_ml \
   --tb_dir "$HOME"/output/cancer_ml/tb_runs
 
