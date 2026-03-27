@@ -102,6 +102,7 @@ def main() -> None:
         train_ds,
         validation_data=val_ds,
         epochs=N_EPOCHS,
+        verbose=2,
     )
 
 if __name__ == "__main__":
