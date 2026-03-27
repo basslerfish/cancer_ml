@@ -1,5 +1,5 @@
 """
-Fit model.
+Fit model on HPC.
 """
 import argparse
 import datetime
@@ -15,7 +15,7 @@ from cancer_ml.utils import assert_gpu_available
 
 # paths
 FILTER_SIZES = [32, 64]
-BATCH_SIZE = 4
+BATCH_SIZE = 64
 N_EPOCHS = 50
 MODEL_TYPE = "advanced"
 
@@ -88,11 +88,12 @@ def main() -> None:
     dimensions_str = f"-".join([str(x) for x in dset_shape])
     model_id = f"{filters_str}_{dimensions_str}"
     print(f"Model ID: {model_id}")
-    os.makedirs(output_dir / model_id, exist_ok=True)
-    model_file = output_dir / model_id / f"cnn.weights.h5"
-    csv_file = output_dir / model_id / "log.csv"
+    model_folder = output_dir / model_id
+    os.makedirs(model_folder, exist_ok=True)
+    model_file = model_folder / f"cnn.weights.h5"
+    csv_file = model_folder / "log.csv"
     date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    tb_folder = tb_dir / "3d" / date_str
+    tb_folder = tb_dir / "2d" / date_str
     callbacks = [
         keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
         keras.callbacks.CSVLogger(csv_file),
