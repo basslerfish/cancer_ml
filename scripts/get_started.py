@@ -1,19 +1,16 @@
 """
 Let's load some data.
 There's T1-weighted images with a flexible range.
-Then there's
-
 Images: x, y, z
 
 """
 import os
 from pathlib import Path
-import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from src.load import find_and_load
+from cancer_ml.load import find_and_load_sample
 
 # paths
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2/")
@@ -28,7 +25,7 @@ print(f"Random folder: {random_folder}")
 
 # load
 print("---Loading data---")
-t1_data, gtv_data = find_and_load(random_folder)
+t1_data, gtv_data = find_and_load_sample(random_folder)
 
 dtypes = {"t1": t1_data, "gtv": gtv_data}
 for name, this_data in dtypes.items():

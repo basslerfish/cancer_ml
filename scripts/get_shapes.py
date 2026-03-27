@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from src.load import find_and_load
+from cancer_ml.load import find_and_load_sample
 
 # paths
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
@@ -19,7 +19,7 @@ count = 0
 for element in SOURCE.iterdir():
     print(f"{element.name}")
     if element.is_dir():
-        t1, gtv = find_and_load(element)
+        t1, gtv = find_and_load_sample(element)
         entry = {
             "sample": element.name,
             "x": t1.shape[0],

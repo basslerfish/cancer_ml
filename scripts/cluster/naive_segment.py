@@ -75,8 +75,8 @@ def main() -> None:
 
     print("---Compile---")
     optimizer = keras.optimizers.Adam()
-    loss_fn = keras.losses.BinaryCrossentropy()
-    metrics = [keras.metrics.BinaryAccuracy()]
+    loss_fn = keras.losses.Dice()
+    metrics = [keras.metrics.BinaryIoU()]
     model = get_simple_cnn(data_shape, FILTER_SIZES)
     model.compile(
         optimizer=optimizer,

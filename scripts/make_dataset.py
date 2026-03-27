@@ -14,7 +14,7 @@ import pandas as pd
 import scipy.ndimage
 import tensorflow as tf
 
-from cancer_ml.load import find_files, load_images
+from cancer_ml.load import find_t1_and_gtv_files, load_images
 
 # params
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
@@ -32,7 +32,7 @@ df = pd.DataFrame({"i": np.arange(folders_to_load.size), "sample": [x.name for x
 t1_paths = []
 gtv_paths = []
 for folder in folders_to_load:
-    t1_file, gtv_file = find_files(folder)
+    t1_file, gtv_file = find_t1_and_gtv_files(folder)
     t1_paths.append(str(t1_file))
     gtv_paths.append(str(gtv_file))
 
