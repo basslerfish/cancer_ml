@@ -1,3 +1,6 @@
+"""
+Fit a CNN to predict segmentation mask on 2D images.
+"""
 import datetime
 import os
 from pathlib import Path
@@ -5,7 +8,7 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.two_dims import get_simple_cnn
+from cancer_ml.models.two_dims import get_simple_cnn, get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
 
 # params
@@ -15,6 +18,7 @@ TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/
 FILTER_SIZES = [16, 32]
 N_EPOCHS = 50
 BATCH_SIZE = 64
+MODEL_TYPE = "advanced"  # simple / advanced
 
 # load data
 dsets = {}
@@ -37,10 +41,18 @@ input_shape = X.shape
 print(f"{X.shape=}")
 
 # make model
-model = get_simple_cnn(
-    input_shape,
-    filter_sizes=FILTER_SIZES,
-)
+if MODEL_TYPE == "simple":
+    model = get_simple_cnn(
+        input_shape,
+        filter_sizes=FILTER_SIZES,
+    )
+elif MODEL_TYPE == "advanced":
+    model = get_advanced_cnn(
+        input_shape,
+        filter_sizes=FILTER_SIZES,
+    )
+else:
+    raise ValueError(f"{MODEL_TYPE=} unknown.")
 
 # compile
 optimizer = keras.optimizers.Adam()
