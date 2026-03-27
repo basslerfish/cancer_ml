@@ -84,7 +84,7 @@ def main() -> None:
     # go!
     tuner = kt.BayesianOptimization(
         hypermodel=build_model,
-        objective="val_loss",
+        objective="val_dice",
         max_trials=MAX_TRIALS,
         directory=output_dir,
         project_name="optimize_2d",
