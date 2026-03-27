@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=naive_segment
+#SBATCH --job-name=fit_3d
 #SBATCH --output=/home/mbassler/slurm_logs/cancer_ml/%x_%j.log
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
