@@ -26,7 +26,7 @@ pip install --user -e "$HOME"/github/cancer_ml
 #COpy files
 echo "---COPYING FILES---"
 mkdir -p "$TMPDIR"/data
-cp -r "$HOME"/data/cancer/train_100 "$TMPDIR"/data
+cp -r "$HOME"/data/cancer/samples500_val15_test15_128-128-64 "$TMPDIR"/data
 
 #Run very simple script
 echo "---RUNNING PYTHON SCRIPT---"
