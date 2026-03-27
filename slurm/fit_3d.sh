@@ -30,7 +30,7 @@ cp -r "$HOME"/data/cancer/train_100 "$TMPDIR"/data
 
 #Run very simple script
 echo "---RUNNING PYTHON SCRIPT---"
-python "$HOME"/github/cancer_ml/scripts/cluster/naive_segment.py \
+python "$HOME"/github/cancer_ml/scripts/cluster/fit_3d.py \
   --data_dir "$TMPDIR"/data/cancer/samples500_val15_test15_128-128-64 \
   --output_dir "$HOME"/output/cancer_ml \
   --tb_dir "$HOME"/output/cancer_ml/tb_runs
