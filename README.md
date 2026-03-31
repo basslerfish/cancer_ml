@@ -1,15 +1,16 @@
 # Segmenting meningiomas in T1-weighted MRT images
-In this repository, I use computer vision models to predict cancer segmentation masks in the brain from the 2024 Brain Tumor Segmentation Challenge Meningioma Radiotherapy (BraTS-MEN_RT) dataset.
+In this repository, I use computer vision models to predict meningioma cancer segmentation masks from MRT images using the 2024 Brain Tumor Segmentation Challenge Meningioma Radiotherapy (BraTS-MEN_RT) dataset.
 
 ## The data
-This dataset consists of T1-weighted MRT brain scan images of meningioma patients (data) and similarly shaped cancer segmentation masks (labels).
+This dataset consists of 3D T1-weighted MRT brain scans of meningioma patients (data) and similarly shaped cancer segmentation masks (labels).
 The cancer segmentation masks are referred to as gross tumor volumes (GTV). Each GTV voxel is either 0 (no cancer) or 1 (cancer).
+T1 voxels are grayscale and can vary in range based on the data acquisition.
 The X, Y, Z resolutions of the brain scans vary across samples and the brain scans are not aligned to a reference.
-We have 500 samples with labels (and 70 samples without labels which I currently do not use.)
+We have 500 samples with labels and 70 samples without labels (which I currently do not use.)
 For more info on the dataset, see the original publication: https://www.nature.com/articles/s41597-026-06649-x
 
 ## The goal
-The goal of this repository is not to win the challenge which finished long ago (for the results, see: https://arxiv.org/pdf/2405.18383).
+The goal of this repository is not to win the challenge (which finished long ago, for the results, see: https://arxiv.org/pdf/2405.18383).
 Instead, the goal is to see how close I can get to SOTA performance with my limited resources.
 
 ## Progress and challenges
