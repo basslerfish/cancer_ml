@@ -77,7 +77,7 @@ def main() -> None:
         keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
         keras.callbacks.CSVLogger(csv_file),
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
-        UnfreezeCallBack(model, loss_fn, optimizer, metrics, EPOCH_TO_UNFREEZE)
+        UnfreezeCallBack(model, EPOCH_TO_UNFREEZE)
     ]
     model.fit(
         train_ds,
