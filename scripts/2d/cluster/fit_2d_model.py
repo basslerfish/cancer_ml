@@ -9,15 +9,16 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_flexible_model
+from cancer_ml.models.two_dims.custom import get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.utils import assert_gpu_available
+from cancer_ml.utils import assert_gpu_available, get_args_dirs
 
 # paths
 FILTER_SIZES = [32, 64]
+DROPOUT_RATE = 0.1
+ADD_SKIP_CONNECTIONS = True
 BATCH_SIZE = 64
 N_EPOCHS = 50
-MODEL_TYPE = "advanced"
 
 
 def main() -> None:
@@ -25,19 +26,7 @@ def main() -> None:
     assert_gpu_available()
 
     # arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir")
-    parser.add_argument("--output_dir")
-    parser.add_argument("--tb_dir")
-    args = parser.parse_args()
-
-    # check paths
-    data_dir = Path(args.data_dir)
-    output_dir = Path(args.output_dir)
-    tb_dir = Path(args.tb_dir)
-    assert data_dir.is_dir(), f"{data_dir} does not exist"
-    assert output_dir.is_dir(), f"{output_dir} does not exist"
-    assert tb_dir.is_dir(), f"{tb_dir} does not exist"
+    data_dir, output_dir, tb_dir = get_args_dirs()
 
     # get shape
     dset_name = data_dir.name
@@ -68,15 +57,16 @@ def main() -> None:
         print(f"Batch shape: {X.shape}")
 
     # get model
-    model = get_flexible_model(
+    model = get_advanced_cnn(
         input_shape=dset_shape,
         filter_sizes=FILTER_SIZES,
-        model_type=MODEL_TYPE,
+        dropout_rate=DROPOUT_RATE,
+        add_skips=ADD_SKIP_CONNECTIONS,
     )
 
     optimizer = keras.optimizers.Adam()
     loss_fn = DiceBCELoss()
-    metrics = [keras.metrics.BinaryIoU(), keras.losses.Dice]
+    metrics = [keras.losses.Dice]
     model.compile(
         optimizer=optimizer,
         loss=loss_fn,

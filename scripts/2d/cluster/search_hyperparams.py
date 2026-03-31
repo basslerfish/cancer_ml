@@ -21,7 +21,6 @@ FILTER_SIZES = {
     "32-64-128-256": [32, 64, 128, 256],
 }
 
-
 def main() -> None:
     # make sure we are using GPU
     assert_gpu_available()

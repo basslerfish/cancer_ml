@@ -75,6 +75,7 @@ def main() -> None:
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS_TO_UNFREEZE,
+        verbose=2,
     )
 
     print("---Second fit---")
