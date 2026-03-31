@@ -26,10 +26,13 @@ As I had no idea as to how difficult the segmentation task would be, my initial 
 Then, I would increase model complexity steadily and/or finetune pretrained models to reach competitive performance.
 
 ### Preprocessing
-The first challenge to overcome was the preprocessing the data with `tensorflow`. 3D image stacks can use up RAM very quickly if not handled properly.
+The first challenge to overcome was preprocessing the data with `tensorflow`. 3D image stacks can use up RAM very quickly if not handled properly.
 I decided that I would focus on implementing the full analysis first with downscaled datasets, then perhaps repeat with larger datasets in the future.
 I resampled all image stacks to shape 128 x 128 x 64 (xyz). I saved the T1 images as float16 and the GTV images as bool to save space. (Note that at loss calculation, the GTV data type has to be changed to float32).
-I also decided I would split the 500 samples into 70% train, 15% val and 15% test datasets.
+I also decided I would split the 500 samples into 70% train, 15% val and 15% test sets.
+
+<img src="images/example_preprocessing.png" alt="Training sample before and after preprocessing" width="500">
+
 
 ### First model fits
 Next up, I built a simple 3D segmentation CNN using `keras`. I like keras for prototyping because it saves a lot of boilerplate code compared to e.g. PyTorch.
@@ -38,19 +41,19 @@ I kept the number of layers and filters per layer very low in the beginning and 
 
 ### First challenges: Imbalanced classes and RAM
 During the first training runs, I noticed very quickly that BCE loss is not a good loss for this challenge because the cancer masks are widely unbalanced.
-That is, most of the brain scan voxels do not contain cancer, and so a model that guesses no cancer for every voxel will achieve a very good loss without solving the task.
+That is, most of the brain scan voxels do not contain cancer, and so a model that guesses "no cancer" for every voxel will achieve a very good loss without solving the task.
 Fortunately, the Dice Similarity Coefficient (DSC) can give a better measure of performance in such a task AND can be used as a loss for model training (`keras.losses.Dice`; this technically is 1 - DSC).
-The DSC essentially ignores predictions on voxels where the true mask says no cancer, such that performance is coupled to getting the segmentation right where it matters.
+The DSC essentially ignores predictions on voxels where the true mask says "no cancer", such that performance is coupled to getting the segmentation right where it matters.
 Because the DSC may be 0 for a model in early training stages for quite a while, I opted for a combined Dice and BCE loss for model training.
 
 The second issue I encountered was that even with the proper loss function in place and a *very* small network, 3D convolution was taking forever on my laptop.
 Although I had access to an HPC, I thought it would be useful to simplify the task at least initially such that I wouldn't have to burn my precious computing budget on early prototyping.
 
 ### Simplifying the problem: 2D segmentation
-The solution I came up with to iterate over models faster than the 3D segmentation task allowed was to turn it into a 2d segmentation task.
+The solution I came up with to iterate over models faster than the 3D segmentation task allowed was to turn it into a 2D segmentation task.
 While that is decidedly less cool than 3D segmentation and does not make best use of the data structure (z-sections are not independent after all), the expected speed gain was worth it for now.
 
-However, a naive separation of 3D stacks into 2D images was not going to work, again because of class imbalance: most z-sections did not contain cancer, and feeding them to a 2D segmentation model would simply bias it towards predict no cancer for every pixel.
+However, a naive separation of 3D stacks into 2D images was not going to work, again because of class imbalance: most z-sections did not contain cancer, and feeding them to a 2D segmentation model would simply bias it towards predicting "no cancer" for every pixel.
 I decided to only use z-sections that contained an arbitrary minimum of 10 px of cancer masks. Certainly, only including sections that have cancer in the first place is not useful in practice where you want a model to decide whether a patient has cancer in the first place.
 However, the segmentation itself remains challenging - the meningiomas make up only a small part of each image, and the location and size of the meningioma was different for each section.
 
@@ -58,7 +61,23 @@ However, the segmentation itself remains challenging - the meningiomas make up o
 In the 2D segmentation, the best Dice loss on held-out data that I could achieve was 0.23 (DSC: 0.77) which is relatively close to the ~0.8 DSC reported in https://arxiv.org/pdf/2405.18383.
 However, this is hardly a fair comparison since the challenge solvers performed 3D segmentation on the whole T1 images (and not just the ones with cancer).
 
+<img src="images/example_predict_2d.png" alt="Example of a true and predicted cancer segmentation mask" width="500">
 
 ## Next steps
 I skipped over many details in the implementation of the custom CNNs which evolved from very basic to having more ResNet-like features like residuals, batch normalization, skip connections, Swish activation function and a few other improvements.
 I also implemented a Bayesian Optimization of hyperparameters with `keras_tuner` to find the best model my limited computing budget would allow me to run.
+
+That being said, there are certainly many things to improve or try out in this project:
+- implement learning rate schedules
+- use a pretrained segmentation model
+- try a vision transformer instead of CNN
+- return to 3D segmentation
+
+
+### Final comments
+I started to work on using on pretrained segmentation models, choosing Deeplabv3+ as a basis for finetuning. Finetuning models can lead to greater performance at reduced computational costs as compared to training from scratch but also requires care not to destroy the model's knowledge during training (low learning rate, gradual unfreezing of layers).
+Initial results were a bit disappointing (DSC ~0.5). I suspect the reason for that is that my input resolution is too low (128 x 128 instead of 512 x 512 which the model was optimized for). This is fixable but increasing the resolution also increases computational cost.
+
+Vision transformers (ViT) can be more powerful than CNNs but are said to be more data hungry.
+I assume that therefore, finetuning a pretrained ViT makes more sense than training a ViT from scratch (though I will certainly try).
+
