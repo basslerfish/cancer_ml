@@ -77,7 +77,7 @@ def main() -> None:
         objective="val_dice",
         max_trials=MAX_TRIALS,
         directory=output_dir,
-        project_name="optimize_2d_advanced",
+        project_name="optimize_2d_dropout",
     )
 
     tuner.search(
