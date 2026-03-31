@@ -14,7 +14,7 @@ from cancer_ml.utils import get_args_dirs
 
 # params
 N_EPOCHS = 100
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 
 
 def main() -> None:
@@ -75,7 +75,6 @@ def main() -> None:
         keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
         keras.callbacks.CSVLogger(csv_file),
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
-        keras.callbacks.EarlyStopping(patience=10),
     ]
     model.fit(
         train_ds,

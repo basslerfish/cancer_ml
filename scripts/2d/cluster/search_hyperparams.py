@@ -9,19 +9,18 @@ import keras
 import keras_tuner as kt
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_flexible_model
+from cancer_ml.models.two_dims.custom import get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.utils import assert_gpu_available
+from cancer_ml.utils import assert_gpu_available, get_args_dirs
 
 # params
 MAX_TRIALS = 50
 BATCH_SIZE = 64
-N_EPOCHS = 50
+N_EPOCHS = 100
 FILTER_SIZES = {
-    "16-32": [16, 32],
     "16-32-64": [16, 32, 64],
-    "32-64": [32, 64],
-    "32-64-128": [32, 64, 128]
+    "32-64-128": [32, 64, 128],
+    "32-64-128-256": [32, 64, 128, 256],
 }
 
 
@@ -30,28 +29,19 @@ def main() -> None:
     assert_gpu_available()
 
     # arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir")
-    parser.add_argument("--output_dir")
-    args = parser.parse_args()
-
-    # paths
-    data_dir = Path(args.data_dir)
-    output_dir = Path(args.output_dir)
-    assert data_dir.is_dir(), f"{data_dir} does not exist"
-    assert output_dir.is_dir(), f"{output_dir} does not exist"
-    output_dir = output_dir / "params_search"
+    data_dir, output_dir = get_args_dirs(also_tb=False)
     os.makedirs(output_dir, exist_ok=True)
 
     # load data
     print("---Load data---")
     dsets = {}
-    for name in ["train", "val", "test"]:
+    for name in ["train", "val"]:
         ds = tf.data.Dataset.load(str(data_dir / name))
         dsets[name] = ds
 
 
     def change_dtype(some_X, some_y) -> tuple:
+        """Change dtype of y to float32 (required for loss calc)"""
         some_y = tf.cast(some_y, tf.float32)
         return some_X, some_y
 
@@ -63,19 +53,12 @@ def main() -> None:
 
 
     print("---Run optimization---")
-    # define possible filter sizes
-    possible_fs = []
-    possible_fs.append([16, 32])
-    possible_fs.append([32, 64])
-    possible_fs.append([32, 64, 128])
-
     # func
     def build_model(hp: kt.HyperParameters) -> keras.Model:
         fs_name = hp.Choice("filter_sizes", list(FILTER_SIZES.keys()))
         filter_sizes = FILTER_SIZES[fs_name]
-        model = get_flexible_model(
+        model = get_advanced_cnn(
             input_shape=input_shape,
-            model_type=hp.Choice("model_type", ["simple", "advanced"]),
             filter_sizes=filter_sizes,
             add_skips=hp.Choice("add_skips", [False, True])
         )
@@ -95,7 +78,7 @@ def main() -> None:
         objective="val_dice",
         max_trials=MAX_TRIALS,
         directory=output_dir,
-        project_name="optimize_2d",
+        project_name="optimize_2d_advanced",
     )
 
     tuner.search(
