@@ -6,7 +6,7 @@ import keras
 class UnfreezeCallBack(keras.callbacks.Callback):
     """
     Unfreeze full model at some epoch.
-
+    Update: turns out it's not allowed to recompile during .fit()
     """
     def __init__(
             self,

@@ -1,6 +1,7 @@
 """
 Let's fit a pretrained segmentation model to our data.
-Now on the cluster.
+
+We do a two phase training - in the first phase, we leave the encoder backbone untouched.
 """
 import os
 import datetime
@@ -15,6 +16,9 @@ from cancer_ml.utils import get_args_dirs
 # params
 N_EPOCHS = 100
 BATCH_SIZE = 128
+EPOCHS_TO_UNFREEZE = 20
+FIRST_LR = 10 ** -3
+SECOND_LR = 10 ** -4
 
 
 def main() -> None:
@@ -54,10 +58,12 @@ def main() -> None:
     print("---Load model---")
     model = get_pretrained_deeplab()
     model.preprocessor.image_converter.image_size = (128, 128)
+
+    print("Unfreezing weights except for encoder ResNet.")
     model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
 
-    print("---Fitting model---")
-    optimizer = keras.optimizers.Adam()
+    print("---First fit---")
+    optimizer = keras.optimizers.Adam(FIRST_LR)
     loss_fn = DiceBCELoss()
     metrics = [keras.losses.Dice()]
     model.compile(
@@ -65,6 +71,17 @@ def main() -> None:
         loss=loss_fn,
         metrics=metrics,
     )
+    model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=EPOCHS_TO_UNFREEZE,
+    )
+
+    print("---Second fit---")
+    model.trainable = True
+    print("All weights are trainable now.")
+
+    # define some callbacks
     model_dir = output_dir / "2d" / "pretrained_deeplabv3+"
     os.makedirs(model_dir, exist_ok=True)
     model_file = model_dir / "cnn.weights.h5"
@@ -76,6 +93,15 @@ def main() -> None:
         keras.callbacks.CSVLogger(csv_file),
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
     ]
+
+    # get a new optimizer with a different lr
+    optimizer = keras.optimizers.Adam(learning_rate=SECOND_LR)
+
+    model.compile(
+        optimizer=optimizer,
+        loss=loss_fn,
+        metrics=metrics,
+    )
     model.fit(
         train_ds,
         validation_data=val_ds,
