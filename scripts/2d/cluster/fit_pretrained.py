@@ -11,10 +11,12 @@ import tensorflow as tf
 from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.utils import get_args_dirs
+from cancer_ml.models.callbacks import UnfreezeCallBack
 
 # params
 N_EPOCHS = 100
 BATCH_SIZE = 128
+EPOCH_TO_UNFREEZE = 20
 
 
 def main() -> None:
@@ -75,6 +77,7 @@ def main() -> None:
         keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
         keras.callbacks.CSVLogger(csv_file),
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
+        UnfreezeCallBack(model, loss_fn, optimizer, metrics, EPOCH_TO_UNFREEZE)
     ]
     model.fit(
         train_ds,

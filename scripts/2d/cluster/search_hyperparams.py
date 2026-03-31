@@ -1,9 +1,7 @@
 """
 Let's search for best model params.
 """
-import argparse
 import os
-from pathlib import Path
 
 import keras
 import keras_tuner as kt
@@ -60,7 +58,8 @@ def main() -> None:
         model = get_advanced_cnn(
             input_shape=input_shape,
             filter_sizes=filter_sizes,
-            add_skips=hp.Choice("add_skips", [False, True])
+            add_skips=hp.Choice("add_skips", [False, True]),
+            dropout_rate=hp.Choice("dropout_rate", values=[0.1, 0.3, 0.5])
         )
         optimizer = keras.optimizers.Adam()
         loss_fn = DiceBCELoss()

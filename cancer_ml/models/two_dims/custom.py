@@ -34,6 +34,7 @@ def residual_strided_block(
         filter_size: int,
         kernel_size: int,
         strides: int,
+        dropout_rate: float,
 ) -> tf.Tensor:
     """
     A downsampling block with 2x conv2d, batch norm and residuals.
@@ -43,6 +44,9 @@ def residual_strided_block(
     x = layers.Conv2D(filter_size, kernel_size, padding="same", strides=strides, use_bias=False)(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation("swish")(x)
+
+    if dropout_rate > 0:
+        x = layers.SpatialDropout2D(dropout_rate)(x)
 
     x = layers.Conv2D(filter_size, kernel_size, padding="same", use_bias=False)(x)
     x = layers.BatchNormalization()(x)
@@ -88,6 +92,7 @@ def get_advanced_cnn(
         kernel_size: int = 3,
         strides: int = 2,
         add_skips: bool = False,
+        dropout_rate: float = 0,
 ) -> keras.Model:
     """
     Advanced CNN.
@@ -101,7 +106,7 @@ def get_advanced_cnn(
     for fs in filter_sizes:
         if add_skips:
             skips.append(x)
-        x = residual_strided_block(x, fs, strides=strides, kernel_size=kernel_size)
+        x = residual_strided_block(x, fs, strides=strides, kernel_size=kernel_size, dropout_rate=dropout_rate)
 
     for i_fs, fs in enumerate(filter_sizes[::-1]):
         x = upsampling_block(x, fs, strides=strides, kernel_size=kernel_size)

@@ -57,3 +57,8 @@ def dl_unfreeze_aspp_decoder(model, also_batch_norm: bool = False) -> keras.Mode
         this_layer.trainable = trainable
         print(f"\t Layer {this_layer.name}: {trainable=}")
     return model
+
+
+def unfreeze_all(model: keras.Model) -> keras.Model:
+    model.trainable = True
+    return model
