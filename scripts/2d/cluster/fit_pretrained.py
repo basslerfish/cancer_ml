@@ -14,7 +14,7 @@ from cancer_ml.utils import get_args_dirs
 
 # params
 N_EPOCHS = 100
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 
 def main() -> None:
@@ -54,7 +54,7 @@ def main() -> None:
     print("---Load model---")
     model = get_pretrained_deeplab()
     model.preprocessor.image_converter.image_size = (128, 128)
-    model = dl_unfreeze_aspp_decoder(model)
+    model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
 
     print("---Fitting model---")
     optimizer = keras.optimizers.Adam()
