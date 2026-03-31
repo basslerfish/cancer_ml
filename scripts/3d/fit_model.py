@@ -8,7 +8,8 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.three_dims import get_simple_cnn, DiceBCELoss
+from cancer_ml.models.three_dims.custom import get_simple_cnn
+from cancer_ml.models.loss import DiceBCELoss
 
 # paths
 DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/samples500_val15_test15_128-128-64")

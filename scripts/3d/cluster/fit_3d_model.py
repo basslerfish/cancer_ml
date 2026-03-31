@@ -9,7 +9,8 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.three_dims import get_simple_cnn, DiceBCELoss
+from cancer_ml.models.three_dims.custom import get_simple_cnn
+from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.utils import assert_gpu_available
 
 # paths

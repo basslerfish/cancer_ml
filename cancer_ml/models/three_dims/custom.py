@@ -10,8 +10,6 @@ from keras.src.layers import Conv3D
 from tensorflow.python.keras.layers import UpSampling3D
 
 
-
-
 def get_simple_cnn(
         input_shape: tuple | list | np.ndarray,
         filter_sizes: list,

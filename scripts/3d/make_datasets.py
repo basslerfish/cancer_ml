@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 
-from cancer_ml.load import find_t1_and_gtv_files, load_images
 from cancer_ml.preprocess import split_folders, load_tf, resize, clip_t1, zscore_t1, change_dims_3d
 
 # params
