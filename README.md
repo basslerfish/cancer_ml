@@ -65,7 +65,7 @@ However, this is hardly a fair comparison since the challenge solvers performed 
 <img src="images/example_predict_2d.png" alt="Example of a true and predicted cancer segmentation mask" width="500">
 
 ## Next steps
-I skipped over many details in the implementation of the custom CNNs which evolved from very basic to having more ResNet-like features like residuals, batch normalization, skip connections, Swish activation function and a few other improvements.
+I skipped over many details in the implementation of the custom CNNs which evolved from very basic to having more ResNet-like features like residuals, batch normalization, skip connections and a few other improvements.
 I also implemented a Bayesian Optimization of hyperparameters with `keras_tuner` to find the best model my limited computing budget would allow me to run.
 
 That being said, there are certainly many things to improve or try out in this project:
