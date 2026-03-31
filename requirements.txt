@@ -7,5 +7,6 @@ pandas
 pillow
 scipy
 tensorboard
-keras_tuner
+keras-tuner
 scikit-learn
+keras-hub

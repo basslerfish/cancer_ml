@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from cancer_ml.models.two_dims import get_simple_cnn
+from cancer_ml.models.two_dims.custom import get_simple_cnn
 
 # params
 MODEL_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/2d/flattened")

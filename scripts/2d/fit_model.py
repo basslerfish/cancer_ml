@@ -8,7 +8,7 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.two_dims import get_simple_cnn, get_advanced_cnn
+from cancer_ml.models.two_dims.custom import get_simple_cnn, get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
 
 # params
