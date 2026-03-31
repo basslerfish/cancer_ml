@@ -20,7 +20,7 @@ module load cuDNN/9.5.0.50-CUDA-12.6.0
 
 #install packages
 echo "---INSTALLING PACKAGES---"
-pip install --user pandas matplotlib numpy scipy keras_hub keras_tuner scikit-learn
+pip install --user pandas matplotlib numpy scipy keras-hub keras-tuner scikit-learn
 pip install --user -e "$HOME"/github/cancer_ml
 
 #Copy files
