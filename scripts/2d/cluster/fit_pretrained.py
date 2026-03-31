@@ -8,7 +8,7 @@ import datetime
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab
+from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.utils import get_args_dirs
 
@@ -54,8 +54,7 @@ def main() -> None:
     print("---Load model---")
     model = get_pretrained_deeplab()
     model.preprocessor.image_converter.image_size = (128, 128)
-    model.trainable = True
-    model.backbone.trainable = False  # let's not modify the resnet backbone
+    model = dl_unfreeze_aspp_decoder(model)
 
     print("---Fitting model---")
     optimizer = keras.optimizers.Adam()

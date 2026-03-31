@@ -20,6 +20,7 @@ from pathlib import Path
 
 import keras
 import tensorflow as tf
+from keras import layers
 
 from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab
 from cancer_ml.models.loss import DiceBCELoss
@@ -29,7 +30,7 @@ DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datase
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/")
 TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/")
 N_EPOCHS = 50
-BATCH_SIZE = 64
+BATCH_SIZE = 4
 
 # load data
 print("---Load data---")
@@ -66,8 +67,7 @@ print("---Load model---")
 model = get_pretrained_deeplab()
 model.preprocessor.image_converter.image_size = (128, 128)
 
-model.trainable = True
-model.backbone.trainable = False
+
 
 print("---Fitting model---")
 optimizer = keras.optimizers.Adam()
