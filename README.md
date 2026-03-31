@@ -10,8 +10,7 @@ We have 500 samples with labels and 70 samples without labels (which I currently
 For more info on the dataset, see the original publication: https://www.nature.com/articles/s41597-026-06649-x
 
 ## The goal
-The goal of this repository is not to win the challenge (which finished long ago, for the results, see: https://arxiv.org/pdf/2405.18383).
-Instead, the goal is to see how close I can get to SOTA performance with my limited resources.
+The goal of this repository is not to win the challenge (which finished long ago, for the results, see: https://arxiv.org/pdf/2405.18383) but to see how close I can get to SOTA performance with my limited resources.
 
 ## Progress and challenges
 ###  Naive approach
