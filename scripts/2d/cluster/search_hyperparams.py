@@ -1,5 +1,9 @@
 """
-Let's search for best model params.
+Let's search for best model params for an advanced CNN.
+We can modify
+- depth / filter_sizes
+- add_skips
+- dropout_rate
 """
 import os
 
@@ -19,7 +23,10 @@ FILTER_SIZES = {
     "16-32-64": [16, 32, 64],
     "32-64-128": [32, 64, 128],
     "32-64-128-256": [32, 64, 128, 256],
+    "64-128-256-512": [64, 128, 256, 512]
 }
+ADD_SKIPS = [False, True]
+DROPOUT_RATES = [0.1, 0.3, 0.5]
 
 def main() -> None:
     # make sure we are using GPU
@@ -31,23 +38,19 @@ def main() -> None:
 
     # load data
     print("---Load data---")
-    dsets = {}
-    for name in ["train", "val"]:
-        ds = tf.data.Dataset.load(str(data_dir / name))
-        dsets[name] = ds
-
-
     def change_dtype(some_X, some_y) -> tuple:
         """Change dtype of y to float32 (required for loss calc)"""
         some_y = tf.cast(some_y, tf.float32)
         return some_X, some_y
 
+    dsets = {}
+    for name in ["train", "val"]:
+        ds = tf.data.Dataset.load(str(data_dir / name))
+        ds = ds.map(change_dtype).batch(BATCH_SIZE)
+        dsets[name] = ds
 
-    train_ds = dsets["train"].map(change_dtype).batch(BATCH_SIZE)
-    val_ds = dsets["val"].map(change_dtype).batch(BATCH_SIZE)
     X, y = next(iter(dsets["train"].take(1)))
-    input_shape = X.shape
-
+    input_shape = X.shape[1:]
 
     print("---Run optimization---")
     # func
@@ -57,8 +60,8 @@ def main() -> None:
         model = get_advanced_cnn(
             input_shape=input_shape,
             filter_sizes=filter_sizes,
-            add_skips=hp.Choice("add_skips", [False, True]),
-            dropout_rate=hp.Choice("dropout_rate", values=[0.1, 0.3, 0.5])
+            add_skips=hp.Choice("add_skips", ADD_SKIPS),
+            dropout_rate=hp.Choice("dropout_rate", DROPOUT_RATES),
         )
         optimizer = keras.optimizers.Adam()
         loss_fn = DiceBCELoss()
@@ -76,12 +79,12 @@ def main() -> None:
         objective="val_dice",
         max_trials=MAX_TRIALS,
         directory=output_dir,
-        project_name="optimize_2d_dropout",
+        project_name="optimize_advanced",
     )
 
     tuner.search(
-        train_ds,
-        validation_data=val_ds,
+        dsets["train"],
+        validation_data=dsets["val"],
         epochs=N_EPOCHS,
         verbose=2,
     )

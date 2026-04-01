@@ -1,0 +1,102 @@
+"""
+Retrain best model after grid search.
+"""
+import datetime
+import os
+from pathlib import Path
+
+import keras
+import keras_tuner as kt
+import tensorflow as tf
+
+from cancer_ml.models.two_dims.search import build_model
+from cancer_ml.models.base import fit_and_evaluate
+from cancer_ml.models.loss import DiceBCELoss
+from cancer_ml.models.params import get_data_params
+
+
+# params
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_zscore_val15_test15_128-128")
+OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/2d/")
+TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/")
+BATCH_SIZE = 128
+N_EPOCHS = 100
+
+
+# load hparams search
+print("---Load search result---")
+tuner = kt.BayesianOptimization(
+    hypermodel=build_model,
+    objective="val_dice",
+    directory=OUTPUT,
+    project_name="optimize_advanced",
+    overwrite=False,
+)
+tuner.reload()
+best_trial = tuner.oracle.get_best_trials(1)[0]
+best_score = best_trial.score
+print(f"Best objective: {best_score:.4f}")
+best_hps: dict = tuner.get_best_hyperparameters(1)[0].values
+model = tuner.get_best_models(1)[0]
+print("Best parameters:")
+for k, v in best_hps.items():
+    print(f"\t {k} -> {v}")
+
+print("---Load data---")
+def change_dtype(t1_imgs, gtv_imgs) -> tuple:
+    """We want X as float16 (to save memory) and y as float32 (to have good loss calculations)"""
+    t1_imgs = tf.cast(t1_imgs, tf.float16)
+    gtv_imgs = tf.cast(gtv_imgs, tf.float32)
+    return t1_imgs, gtv_imgs
+
+dsets = {}
+for name in ["train", "val", "test"]:
+    ds = tf.data.Dataset.load(str(DSET_FOLDER / name))
+    ds = ds.map(change_dtype).batch(BATCH_SIZE)
+    dsets[name] = ds
+X, y = next(iter(dsets["train"].take(1)))
+hparams = get_data_params(X)
+
+# set up model
+optimizer = keras.optimizers.Adam()
+loss_fn = DiceBCELoss()
+metrics = [keras.losses.Dice]
+model = keras.models.clone_model(model)  # reset the weights
+model.compile(
+    optimizer=optimizer,
+    loss=loss_fn,
+    metrics=metrics,
+)
+
+# prep output
+print("---Prepping output---")
+date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+model_dir = OUTPUT / date_str
+os.makedirs(model_dir, exist_ok=True)
+
+# set up callbacks
+tb_folder = TB_FOLDER / "2d" / date_str
+callbacks = [
+    keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
+    keras.callbacks.EarlyStopping(patience=10),
+]
+
+# save hyperparameters
+hparams["model_type"] = "advanced"
+hparams["comment"] = "post_search"
+hparams["search_score"] = best_score
+hparams["filter_sizes"] = best_hps["filter_sizes"]
+hparams["dropout_rate"] = best_hps["dropout_rate"]
+hparams["n_epochs"] = N_EPOCHS
+hparams["batch_size"] = BATCH_SIZE
+hparams["add_skips"] = best_hps["add_skips"]
+
+
+# fit
+fit_and_evaluate(
+    model=model,
+    hparams=hparams,
+    dsets=dsets,
+    model_dir=model_dir,
+    callbacks=callbacks,
+)
