@@ -20,7 +20,6 @@ from pathlib import Path
 
 import keras
 import tensorflow as tf
-from keras import layers
 
 from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab
 from cancer_ml.models.loss import DiceBCELoss
@@ -66,7 +65,6 @@ assert X.shape[-1] == 3
 print("---Load model---")
 model = get_pretrained_deeplab()
 model.preprocessor.image_converter.image_size = (128, 128)
-
 
 
 print("---Fitting model---")

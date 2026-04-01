@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 
-from cancer_ml.preprocess import split_folders, load_tf, resize, clip_t1, zscore_t1, change_dims_3d
+from cancer_ml.preprocess import split_sample_folders, load_tf, resize_stacks, clip_t1, zscore_t1, change_dims_3d
 
 # params
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
@@ -21,7 +21,7 @@ Y_PX = 128
 Z_SECTIONS = 64
 
 # make splits
-splits, table = split_folders(SOURCE, VAL_FRAC, TEST_FRAC)
+splits, table = split_sample_folders(SOURCE, VAL_FRAC, TEST_FRAC)
 n_total = np.sum([len(x) for x in splits.values()])
 
 # make dataset
@@ -41,7 +41,7 @@ def preprocess_func(sample_folder: str) -> tuple:
     t1_imgs, gtv_imgs = load_tf(sample_folder)
     t1_imgs = t1_imgs.astype(np.float32)
     gtv_imgs = gtv_imgs.astype(np.float32)
-    t1_imgs, gtv_imgs = resize(t1_imgs, gtv_imgs, img_shape)
+    t1_imgs, gtv_imgs = resize_stacks(t1_imgs, gtv_imgs, img_shape)
     t1_imgs, gtv_imgs = clip_t1(t1_imgs, gtv_imgs)
     t1_imgs, gtv_imgs = zscore_t1(t1_imgs, gtv_imgs)
     t1_imgs, gtv_imgs = change_dims_3d(t1_imgs, gtv_imgs, target_shape)

@@ -60,5 +60,6 @@ def dl_unfreeze_aspp_decoder(model, also_batch_norm: bool = False) -> keras.Mode
 
 
 def unfreeze_all(model: keras.Model) -> keras.Model:
+    """Unfreeze all weights for training."""
     model.trainable = True
     return model

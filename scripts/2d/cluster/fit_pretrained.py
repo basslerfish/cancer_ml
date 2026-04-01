@@ -48,12 +48,14 @@ def main() -> None:
     X, y = next(iter(train_ds.take(1)))
     print(f"{X.shape=}")
     print(f"{y.shape=}")
-    assert X.shape[-1] == 3
+    assert X.ndim == 4  # n_batch, x, y, n_channels
+    assert X.shape[-1] == 3  # last dim should be channels
+    image_size = (X.shape[1], X.shape[2])
 
     # load model
     print("---Load model---")
     model = get_pretrained_deeplab()
-    model.preprocessor.image_converter.image_size = (128, 128)
+    model.preprocessor.image_converter.image_size = image_size
     model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
 
     print("---Fitting model---")

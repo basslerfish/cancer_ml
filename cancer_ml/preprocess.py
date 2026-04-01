@@ -11,7 +11,7 @@ import tensorflow as tf
 from cancer_ml.load import find_sample_folders, find_t1_and_gtv_files, load_images
 
 
-def split_folders(
+def split_sample_folders(
         source: Path,
         val_frac: float,
         test_frac: float,
@@ -68,6 +68,8 @@ def split_folders(
 def load_tf(sample_folder) -> tuple:
     """Load T1 and GTV images."""
     sample_folder = sample_folder.numpy().decode("utf-8")
+    sample_folder = Path(sample_folder)
+    assert sample_folder.is_dir()
     print(f"\t Loading {sample_folder.name}.")
     sample_folder = Path(sample_folder)
     assert sample_folder.is_dir()
@@ -77,12 +79,16 @@ def load_tf(sample_folder) -> tuple:
     return t1_imgs, gtv_imgs
 
 
-def resize(
+def resize_stacks(
         t1_imgs: np.ndarray,
         gtv_imgs: np.ndarray,
         target_shape: tuple | list
 ) -> tuple:
-    """Resize images to achieve a consistent shape."""
+    """
+    Resize images to achieve a consistent shape.
+    Note: target_shape is X, Y, Z at this point.
+    Only after change_dims_3d do we have Z, X, Y, n_channels (as expected by keras for conv)
+    """
     current_shape = t1_imgs.shape
     zoom_factors = [t / c for t, c in zip(target_shape, current_shape)]
     t1_imgs = scipy.ndimage.zoom(t1_imgs, zoom=zoom_factors, order=1)
@@ -103,6 +109,12 @@ def zscore_t1(t1_imgs: np.ndarray, gtv_imgs: np.ndarray) -> tuple:
     return t1_imgs, gtv_imgs
 
 
+def minmax_t1(t1_imgs: np.ndarray, gtv_imgs: np.ndarray) -> tuple:
+    """Rescale T1 values to [0, 1] but leave GTB images unaffected."""
+    t1_imgs = (t1_imgs - np.min(t1_imgs)) / (np.max(t1_imgs) - np.min(t1_imgs))
+    return t1_imgs, gtv_imgs
+
+
 def change_dims_3d(t1_imgs: np.ndarray, gtv_imgs: np.ndarray, target_shape: list | tuple) -> tuple:
     """
     Reorder axes and add channel axis to prepare for keras processing.
@@ -115,6 +127,31 @@ def change_dims_3d(t1_imgs: np.ndarray, gtv_imgs: np.ndarray, target_shape: list
     assert np.all(t1_imgs.shape == target_shape), t1_imgs.shape
     assert np.all(gtv_imgs.shape == target_shape), gtv_imgs.shape
     return t1_imgs, gtv_imgs
+
+
+def remove_unannotated_sections(X: tf.Tensor, y: tf.Tensor, n_min: int = 10) -> tuple:
+    """
+    Remove z-sections without a min amount of cancer.
+    X: n_sections, x, y, 1
+    """
+    X = X.numpy()
+    y = y.numpy().astype(np.float32)
+    assert X.ndim == 4, f"{X.ndim}"  # should be z, x, y, 1. If it's 5, there might be an extra batch dim.
+    assert X.shape[-1] == 1, f"{X.shape}"  # last dim should be channels, of which there should be only 1
+    n_segmented = np.sum(y, axis=(1, 2, 3))
+    is_selected = n_segmented >= n_min
+    n_selected = np.sum(is_selected)
+    n_total = n_segmented.size
+    frac_selected = n_selected / n_total
+    print(f"Sections with mask: {n_selected}/{n_total} -> {frac_selected:.1%}")
+    X = X[is_selected, :, :, :]
+    y = y[is_selected, :, :, :]
+    X = tf.convert_to_tensor(X)
+    y = tf.convert_to_tensor(y)
+    X = tf.cast(X, tf.float16)
+    y = tf.cast(y, tf.bool)
+    new_shape = X.shape
+    return X, y, new_shape
 
 
 

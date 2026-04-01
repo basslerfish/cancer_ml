@@ -70,6 +70,9 @@ def get_advanced_cnn(
 
 
 def residual_strided_block(x: tf.Tensor, fs: int, ks: int, strides: int) -> tf.Tensor:
+    """
+    3D CNN encoder block. Could improve.
+    """
     residual = x
 
     # process x
@@ -90,6 +93,7 @@ def residual_strided_block(x: tf.Tensor, fs: int, ks: int, strides: int) -> tf.T
 
 
 def upsample_block(x) -> tf.Tensor:
+    """Unfinished."""
     x = UpSampling3D()(x)
     x = UpSampling3D()(x)
     x = Conv3D()(x)

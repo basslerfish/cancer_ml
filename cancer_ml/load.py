@@ -51,5 +51,3 @@ def find_and_load_sample(sample_folder: Path) -> tuple:
     t1_file, gtv_file = find_t1_and_gtv_files(sample_folder)
     t1_data, gtv_data = load_images(t1_file, gtv_file)
     return t1_data, gtv_data
-
-

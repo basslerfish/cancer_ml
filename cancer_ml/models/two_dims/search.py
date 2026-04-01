@@ -1,3 +1,6 @@
+"""
+Functions to conduct parameter grid search.
+"""
 import keras
 import keras_tuner as kt
 
@@ -5,9 +8,10 @@ from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.two_dims.custom import get_advanced_cnn
 
 
-
-
 def build_model(hp: kt.HyperParameters) -> keras.Model:
+    """
+    Function to use with a keras-tuner search class.
+    """
     filter_sizes = {
         "16-32-64": [16, 32, 64],
         "32-64-128": [32, 64, 128],

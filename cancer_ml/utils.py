@@ -52,3 +52,17 @@ def get_args_dirs(also_tb: bool = True) -> tuple:
         return data_dir, output_dir, tb_dir
     else:
         return data_dir, output_dir
+
+
+def get_image_size_folder_name(folder: Path) -> tuple:
+    """
+    Folder names eg:
+    samples500_val15_test15_128-128
+    samples500_minmax_val15_test15_128-128
+    """
+    parts = folder.name.split("_")
+    image_size = parts[-1]
+    image_size = image_size.split("-")
+    image_size = [int(x) for x in image_size]
+    image_size = tuple(image_size)
+    return image_size

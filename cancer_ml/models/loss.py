@@ -1,4 +1,24 @@
+"""Custom losses for training."""
 import keras
+
+
+class DiceBCELoss(keras.losses.Loss):
+    """
+    Combined Dice and BCE loss.
+    BCE loss on segmentation is not very good predictor of performance when class imbalance is strong.
+    Dice is a better fit, but may be so harsh at beginning that we supplement with BCE.
+    """
+    def __init__(self, dice_weight: float = 0.5, **kwargs) -> None:
+        super().__init__(name="DiceBCELoss", **kwargs)
+        self.dice_weight = dice_weight
+        self.bce_weight = 1 - dice_weight
+
+    def call(self, y_true, y_pred):
+        dice_loss = keras.losses.Dice()(y_true, y_pred)
+        bce_loss = keras.losses.BinaryCrossentropy()(y_true, y_pred)
+        combined_loss = self.dice_weight * dice_loss + self.bce_weight * bce_loss
+        return combined_loss
+
 
 class TverskyBCELoss(keras.losses.Loss):
     """
@@ -20,22 +40,4 @@ class TverskyBCELoss(keras.losses.Loss):
         tversky_loss = self.tversyk(y_true, y_pred)
         bce_loss = keras.losses.BinaryCrossentropy()(y_true, y_pred)
         combined_loss = self.dice_weight * tversky_loss + self.bce_weight * bce_loss
-        return combined_loss
-
-
-class DiceBCELoss(keras.losses.Loss):
-    """
-    Combined Dice and BCE loss.
-    BCE loss on segmentation is not very good predictor of performance when class imbalance is strong.
-    Dice is a better fit, but may be so bad at beginning that we supplement with BCE.
-    """
-    def __init__(self, dice_weight: float = 0.5, **kwargs) -> None:
-        super().__init__(name="DiceBCELoss", **kwargs)
-        self.dice_weight = dice_weight
-        self.bce_weight = 1 - dice_weight
-
-    def call(self, y_true, y_pred):
-        dice_loss = keras.losses.Dice()(y_true, y_pred)
-        bce_loss = keras.losses.BinaryCrossentropy()(y_true, y_pred)
-        combined_loss = self.dice_weight * dice_loss + self.bce_weight * bce_loss
         return combined_loss
