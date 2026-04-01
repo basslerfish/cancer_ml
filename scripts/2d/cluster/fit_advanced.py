@@ -14,11 +14,12 @@ from cancer_ml.models.base import fit_and_evaluate
 from cancer_ml.models.params import get_data_params
 
 # paths
-FILTER_SIZES = [32, 64]
-DROPOUT_RATE = 0.1
+FILTER_SIZES = [64, 128, 256, 512]
+DROPOUT_RATE = 0.3
 ADD_SKIP_CONNECTIONS = True
 BATCH_SIZE = 64
-N_EPOCHS = 50
+N_EPOCHS = 200
+PATIENCE = 50
 
 
 def main() -> None:
@@ -73,7 +74,7 @@ def main() -> None:
     tb_folder = tb_dir / "2d" / date_str
     callbacks = [
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
-        keras.callbacks.EarlyStopping(patience=10),
+        keras.callbacks.EarlyStopping(patience=50),
     ]
 
     # save hyperparameters
@@ -83,6 +84,7 @@ def main() -> None:
     hparams["n_epochs"] = N_EPOCHS
     hparams["batch_size"] = BATCH_SIZE
     hparams["add_skips"] = ADD_SKIP_CONNECTIONS
+    hparams["patience"] = PATIENCE
 
     fit_and_evaluate(
         model=model,

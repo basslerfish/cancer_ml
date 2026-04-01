@@ -33,6 +33,7 @@ def main() -> None:
         """
         # add channels to X
         some_X = tf.image.grayscale_to_rgb(some_X)
+        some_X = tf.cast(some_X, tf.float32)
 
         # change dtype
         some_y = tf.cast(some_y, tf.float32)

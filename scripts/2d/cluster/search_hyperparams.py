@@ -65,7 +65,7 @@ def main() -> None:
         )
         optimizer = keras.optimizers.Adam()
         loss_fn = DiceBCELoss()
-        metrics = [keras.losses.Dice(), keras.losses.BinaryCrossentropy()]
+        metrics = [keras.losses.Dice()]
         model.compile(
             optimizer=optimizer,
             loss=loss_fn,

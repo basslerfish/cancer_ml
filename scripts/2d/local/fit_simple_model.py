@@ -19,7 +19,7 @@ DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datase
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/")
 TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/")
 FILTER_SIZES = [16, 32]
-N_EPOCHS = 3
+N_EPOCHS = 50
 BATCH_SIZE = 64
 
 

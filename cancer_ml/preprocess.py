@@ -135,7 +135,7 @@ def remove_unannotated_sections(X: tf.Tensor, y: tf.Tensor, n_min: int = 10) -> 
     X: n_sections, x, y, 1
     """
     X = X.numpy()
-    y = y.numpy().astype(np.float32)
+    y = y.numpy()
     assert X.ndim == 4, f"{X.ndim}"  # should be z, x, y, 1. If it's 5, there might be an extra batch dim.
     assert X.shape[-1] == 1, f"{X.shape}"  # last dim should be channels, of which there should be only 1
     n_segmented = np.sum(y, axis=(1, 2, 3))
@@ -148,8 +148,6 @@ def remove_unannotated_sections(X: tf.Tensor, y: tf.Tensor, n_min: int = 10) -> 
     y = y[is_selected, :, :, :]
     X = tf.convert_to_tensor(X)
     y = tf.convert_to_tensor(y)
-    X = tf.cast(X, tf.float16)
-    y = tf.cast(y, tf.bool)
     new_shape = X.shape
     return X, y, new_shape
 
