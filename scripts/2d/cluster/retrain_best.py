@@ -1,3 +1,7 @@
+"""
+Retrain best model after grid search.
+Unfinished as of now.
+"""
 from pathlib import Path
 
 import keras_tuner as kt
@@ -6,7 +10,7 @@ from cancer_ml.models.two_dims.search import build_model
 
 
 def main() -> None:
-
+    raise NotImplementedError()
     TUNER_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/2d/optimize_2d_dropout")
 
 

@@ -6,6 +6,7 @@ import os
 import datetime
 
 import keras
+import numpy as np
 import tensorflow as tf
 
 from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder
@@ -48,6 +49,8 @@ def main() -> None:
     X, y = next(iter(train_ds.take(1)))
     print(f"{X.shape=}")
     print(f"{y.shape=}")
+    print(f"Min val: {np.min(X.numpy()):.2f}")
+    print(f"Max val: {np.max(X.numpy()):.2f}")
     assert X.ndim == 4  # n_batch, x, y, n_channels
     assert X.shape[-1] == 3  # last dim should be channels
     image_size = (X.shape[1], X.shape[2])

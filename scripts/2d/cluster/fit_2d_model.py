@@ -1,12 +1,11 @@
 """
 Fit model on HPC.
 """
-import argparse
 import datetime
 import os
-from pathlib import Path
 
 import keras
+import numpy as np
 import tensorflow as tf
 
 from cancer_ml.models.two_dims.custom import get_advanced_cnn
@@ -28,14 +27,6 @@ def main() -> None:
     # arguments
     data_dir, output_dir, tb_dir = get_args_dirs()
 
-    # get shape
-    dset_name = data_dir.name
-    dset_shape = dset_name.split("_")[-1]
-    dset_shape = dset_shape.split("-")
-    dset_shape = [int(x) for x in dset_shape]
-    dset_shape = [dset_shape[0], dset_shape[1], 1]
-    print(dset_shape)
-
     # load data
     print("---Load---")
     train_ds = tf.data.Dataset.load(str(data_dir / "train"))
@@ -55,10 +46,13 @@ def main() -> None:
     val_ds = val_ds.batch(BATCH_SIZE)
     for X, y in train_ds.take(1):
         print(f"Batch shape: {X.shape}")
+        print(f"Min val: {np.min(X.numpy()):.2f}")
+        print(f"Max val: {np.max(X.numpy()):.2f}")
+        input_shape = X.shape[1:]
 
     # get model
     model = get_advanced_cnn(
-        input_shape=dset_shape,
+        input_shape=input_shape,
         filter_sizes=FILTER_SIZES,
         dropout_rate=DROPOUT_RATE,
         add_skips=ADD_SKIP_CONNECTIONS,
@@ -75,7 +69,7 @@ def main() -> None:
     # prep output
     print("---Prepping output---")
     filters_str = f"-".join([str(x) for x in FILTER_SIZES])
-    dimensions_str = f"-".join([str(x) for x in dset_shape])
+    dimensions_str = f"-".join([str(x) for x in input_shape])
     model_id = f"{filters_str}_{dimensions_str}"
     print(f"Model ID: {model_id}")
     model_folder = output_dir / model_id
