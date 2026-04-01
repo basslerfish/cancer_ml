@@ -7,21 +7,24 @@ from pathlib import Path
 import tensorflow as tf
 
 from cancer_ml.preprocess import (load_tf, resize_stacks, clip_t1, change_dims_3d, zscore_t1, minmax_t1,
-                                  remove_unannotated_sections, split_sample_folders)
+                                  remove_unannotated_sections, split_sample_folders, )
 
 
 # params
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d")
-RESIZE_SHAPE = [256, 256, 128]
-KERAS_SHAPE = [128, 256, 256, 1]
-SCALING = "minmax"
+RESIZE_SHAPE = [128, 128, 64]  # x, y, z
+SCALING = "uint8"  # minmax, uint8, zscore
 VAL_FRAC = TEST_FRAC = 0.15
-MIN_PX = 20
+MIN_PX = 10  # let's say 10 for 128 x 128, maybe more for higher res
 
 # filter files
 splits, df = split_sample_folders(SOURCE, VAL_FRAC, TEST_FRAC)
 n_samples = df.shape[0]
+
+# sanity check
+assert SCALING in ["uint8", "minmax", "zscore"]
+keras_shape = [RESIZE_SHAPE[2], RESIZE_SHAPE[0], RESIZE_SHAPE[1], 1]  # z, x, y, n_channels
 
 #
 def load_and_preprocess(sample_path) -> tuple:
@@ -29,11 +32,13 @@ def load_and_preprocess(sample_path) -> tuple:
     X, y = load_tf(sample_path)
     X, y = resize_stacks(X, y, RESIZE_SHAPE)
     X, y = clip_t1(X, y)
-    if SCALING == "minmax":
+    if SCALING in ["minmax", "uint8"]:
         X, y = minmax_t1(X, y)
+        if SCALING == "uint8":
+            X = X * 255
     if SCALING == "zscore":
         X, y = zscore_t1(X, y)
-    X, y = change_dims_3d(X, y, KERAS_SHAPE)
+    X, y = change_dims_3d(X, y, keras_shape)
     X, y, _ = remove_unannotated_sections(X, y, MIN_PX)
     assert X.ndim == 4
     assert y.ndim == 4

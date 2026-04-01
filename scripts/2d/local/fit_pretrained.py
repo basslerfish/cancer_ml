@@ -21,24 +21,20 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
+from cancer_ml.models.params import get_data_params
 from cancer_ml.models.two_dims.pretrained import get_pretrained_deeplab
 from cancer_ml.models.loss import DiceBCELoss
+from cancer_ml.models.base import fit_and_evaluate
 
 # params
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_val15_test15_128-128")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_uint8_val15_test15_128-128")
 OUTPUT = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/")
 TB_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/tb_runs/")
-N_EPOCHS = 50
+N_EPOCHS = 1
 BATCH_SIZE = 4
 
 # load data
 print("---Load data---")
-dsets = {}
-for name in ["train", "val"]:
-    ds = tf.data.Dataset.load(str(DSET_FOLDER / name))
-    dsets[name] = ds
-
-
 def preprocess(some_X: tf.Tensor, some_y: tf.Tensor) -> tuple:
     """
     Change X to 3 channels (required for Resnet, which is the backbone here)
@@ -52,22 +48,26 @@ def preprocess(some_X: tf.Tensor, some_y: tf.Tensor) -> tuple:
     return some_X, some_y
 
 
-train_ds = dsets["train"].map(preprocess).batch(BATCH_SIZE)
-val_ds = dsets["val"].map(preprocess).batch(BATCH_SIZE)
+dsets = {}
+for name in ["train", "val", "test"]:
+    ds = tf.data.Dataset.load(str(DSET_FOLDER / name))
+    ds = ds.map(preprocess).batch(BATCH_SIZE)
+    dsets[name] = ds
 
-X, y = next(iter(train_ds.take(1)))
+
+# get basic info
+X, y = next(iter(dsets["train"].take(1)))
+hparams = get_data_params(X)
 input_shape = X.shape
 print(f"{X.shape=}")
 print(f"{y.shape=}")
-assert X.shape[-1] == 3
+assert X.shape[-1] == 3  # should be 3 channels for pretrained
 
 # load model
 print("---Load model---")
 model = get_pretrained_deeplab()
-model.preprocessor.image_converter.image_size = (128, 128)
+model.preprocessor.image_converter.image_size = (X.shape[1], X.shape[2])
 
-
-print("---Fitting model---")
 optimizer = keras.optimizers.Adam()
 loss_fn = DiceBCELoss()
 metrics = [keras.losses.Dice()]
@@ -77,21 +77,23 @@ model.compile(
     metrics=metrics,
 )
 
-model_dir = OUTPUT / "2d" / "pretrained_deeplabv3+"
-os.makedirs(model_dir, exist_ok=True)
-model_file = model_dir / "cnn.weights.h5"
-csv_file = model_dir / "log.csv"
+# prep output
+hparams["model_type"] = "pretrained_deeplab"
+hparams["n_epochs"] = N_EPOCHS
+hparams["batch_size"] = BATCH_SIZE
+
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+model_dir = OUTPUT / "2d" / date_str
+os.makedirs(model_dir, exist_ok=True)
 tb_folder = TB_FOLDER / "2d_pretrained" / date_str
 callbacks = [
-    keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
-    keras.callbacks.CSVLogger(csv_file),
     keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
     keras.callbacks.EarlyStopping(patience=10),
 ]
-model.fit(
-    train_ds,
-    validation_data=val_ds,
-    epochs=N_EPOCHS,
+fit_and_evaluate(
+    model=model,
+    dsets=dsets,
+    hparams=hparams,
+    model_dir=model_dir,
     callbacks=callbacks,
 )

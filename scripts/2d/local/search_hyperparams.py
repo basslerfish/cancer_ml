@@ -1,5 +1,6 @@
 """
 Let's search for best model params.
+Of course, running this locally will take forever.
 """
 from pathlib import Path
 
@@ -7,7 +8,7 @@ import keras
 import keras_tuner as kt
 import tensorflow as tf
 
-from cancer_ml.models.two_dims import get_flexible_model
+from cancer_ml.models.two_dims.custom import get_flexible_model
 from cancer_ml.models.loss import DiceBCELoss
 
 # params

@@ -7,12 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_simple_cnn
+from cancer_ml.models.two_dims.custom import get_simple_cnn, get_advanced_cnn
+from cancer_ml.models.params import read_hparams
+from cancer_ml.plotting import set_seaborn
 
 # params
-MODEL_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/2d/flattened")
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/flattened")
-FS = [16, 32]
+MODEL_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/2d/20260401_160905")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_zscore_val15_test15_128-128")
 I_SAMPLE = 100
 
 # load data
@@ -26,11 +27,18 @@ input_shape = X.shape
 y_true = np.squeeze(y_true.numpy()).astype(np.float32)
 
 # load model
-model = get_simple_cnn(
-    filter_sizes=FS,
-    input_shape=input_shape,
-)
-weights_file = MODEL_DIR / "cnn.weights.h5"
+hparams = read_hparams(MODEL_DIR / "hparams.json")
+model_type = hparams["model_type"]
+if model_type == "simple":
+    model = get_simple_cnn(
+        filter_sizes=hparams["filter_sizes"],
+        input_shape=input_shape,
+    )
+elif model_type == "advanced":
+    raise NotImplementedError(f"{model_type=}")
+else:
+    raise ValueError(f"{model_type=}")
+weights_file = MODEL_DIR / "best.weights.h5"
 model.load_weights(weights_file)
 
 # predict mask
@@ -38,14 +46,12 @@ X = tf.expand_dims(X, axis=0)
 y_pred = model.predict(X)
 y_pred = np.squeeze(y_pred)
 
-
 # some formatting
 X = np.squeeze(X.numpy())
-print(np.min(y_true), np.max(y_true))
 y_true[y_true == 0] = np.nan
 
-
 # plot
+set_seaborn()
 fig, axes = plt.subplots(1, 2, layout="constrained", figsize=(10, 5))
 for ax in axes:
     ax.set_xlabel("x")

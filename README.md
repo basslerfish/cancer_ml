@@ -42,8 +42,8 @@ I kept the number of layers and filters per layer very low in the beginning and 
 ### First challenges: Imbalanced classes and RAM
 During the first training runs, I noticed very quickly that BCE loss is not a good loss for this challenge because the cancer masks are widely unbalanced.
 That is, most of the brain scan voxels do not contain cancer, and so a model that guesses "no cancer" for every voxel will achieve a very good loss without solving the task.
-Fortunately, the Dice Similarity Coefficient (DSC) can give a better measure of performance in such a task AND can be used as a loss for model training (`keras.losses.Dice`; this technically is 1 - DSC).
-The DSC essentially ignores predictions on voxels where the true mask says "no cancer", such that performance is coupled to getting the segmentation right where it matters.
+Fortunately, the Dice Similarity Coefficient (DSC, identical to the F1 score for single-class classification) can give a better measure of performance in such a task AND can be used as a loss for model training (`keras.losses.Dice`; this technically is 1 - DSC).
+The DSC rewards true positives, but punishes false positives and false negatives such that blindly guessing "no cancer" or "cancer" everywhere will result in bad performance.
 Because the DSC may be 0 for a model in early training stages for quite a while, I opted for a combined Dice and BCE loss for model training.
 
 The second issue I encountered was that even with the proper loss function in place and a *very* small network, 3D convolution was taking forever on my laptop.

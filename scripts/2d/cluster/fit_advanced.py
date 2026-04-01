@@ -5,12 +5,13 @@ import datetime
 import os
 
 import keras
-import numpy as np
 import tensorflow as tf
 
 from cancer_ml.models.two_dims.custom import get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.utils import assert_gpu_available, get_args_dirs
+from cancer_ml.models.base import fit_and_evaluate
+from cancer_ml.models.params import get_data_params
 
 # paths
 FILTER_SIZES = [32, 64]
@@ -29,26 +30,22 @@ def main() -> None:
 
     # load data
     print("---Load---")
-    train_ds = tf.data.Dataset.load(str(data_dir / "train"))
-    val_ds = tf.data.Dataset.load(str(data_dir / "val"))
-
-    # change dtype
     def change_dtype(t1_imgs, gtv_imgs) -> tuple:
         """We want X as float16 (to save memory) and y as float32 (to have good loss calculations)"""
         t1_imgs = tf.cast(t1_imgs, tf.float16)
         gtv_imgs = tf.cast(gtv_imgs, tf.float32)
         return t1_imgs, gtv_imgs
 
+    dsets = {}
+    for name in ["train", "val", "test"]:
+        ds = tf.data.Dataset.load(str(data_dir / name))
+        ds = ds.map(change_dtype).batch(BATCH_SIZE)
+        dsets[name] = ds
 
-    train_ds = train_ds.map(change_dtype)
-    val_ds = val_ds.map(change_dtype)
-    train_ds = train_ds.batch(BATCH_SIZE)
-    val_ds = val_ds.batch(BATCH_SIZE)
-    for X, y in train_ds.take(1):
-        print(f"Batch shape: {X.shape}")
-        print(f"Min val: {np.min(X.numpy()):.2f}")
-        print(f"Max val: {np.max(X.numpy()):.2f}")
-        input_shape = X.shape[1:]
+    X, y = next(iter(dsets["train"].take(1)))
+    hparams = get_data_params(X)
+    input_shape = X.shape[1:]
+    print(f"{X.shape=}")
 
     # get model
     model = get_advanced_cnn(
@@ -68,29 +65,31 @@ def main() -> None:
     )
     # prep output
     print("---Prepping output---")
-    filters_str = f"-".join([str(x) for x in FILTER_SIZES])
-    dimensions_str = f"-".join([str(x) for x in input_shape])
-    model_id = f"{filters_str}_{dimensions_str}"
-    print(f"Model ID: {model_id}")
-    model_folder = output_dir / model_id
-    os.makedirs(model_folder, exist_ok=True)
-    model_file = model_folder / f"cnn.weights.h5"
-    csv_file = model_folder / "log.csv"
     date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_dir = output_dir / date_str
+    os.makedirs(model_dir, exist_ok=True)
+
+    # set up callbacks
     tb_folder = tb_dir / "2d" / date_str
     callbacks = [
-        keras.callbacks.ModelCheckpoint(model_file, save_weights_only=True, save_best_only=True),
-        keras.callbacks.CSVLogger(csv_file),
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
         keras.callbacks.EarlyStopping(patience=10),
     ]
 
-    print("---Fitting model---")
-    model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=N_EPOCHS,
+    # save hyperparameters
+    hparams["model_type"] = "advanced"
+    hparams["filter_sizes"] = FILTER_SIZES
+    hparams["dropout_rate"] = DROPOUT_RATE
+    hparams["n_epochs"] = N_EPOCHS
+    hparams["batch_size"] = BATCH_SIZE
+    hparams["add_skips"] = ADD_SKIP_CONNECTIONS
+
+    fit_and_evaluate(
+        model=model,
+        dsets=dsets,
+        model_dir=model_dir,
         callbacks=callbacks,
+        hparams=hparams,
         verbose=2,
     )
 

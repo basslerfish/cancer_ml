@@ -83,7 +83,7 @@ def main() -> None:
     print("All weights are trainable now.")
 
     # define some callbacks
-    model_dir = output_dir / "2d" / "pretrained_deeplabv3+"
+    model_dir = output_dir / "pretrained_deeplabv3+_twophase"
     os.makedirs(model_dir, exist_ok=True)
     model_file = model_dir / "cnn.weights.h5"
     csv_file = model_dir / "log.csv"
