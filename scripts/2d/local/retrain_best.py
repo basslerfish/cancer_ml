@@ -40,7 +40,8 @@ best_hps: dict = tuner.get_best_hyperparameters(1)[0].values
 model = tuner.get_best_models(1)[0]
 print("Best parameters:")
 for k, v in best_hps.items():
-    print(f"\t {k} -> {v}")
+    print(f"\t {k} -> {v} {type(v)}")
+best_hps["filter_sizes"] = [int(x) for x in best_hps["filter_sizes"].split("-")]
 
 print("---Load data---")
 def change_dtype(t1_imgs, gtv_imgs) -> tuple:

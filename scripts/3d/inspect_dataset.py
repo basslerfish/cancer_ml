@@ -8,10 +8,11 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+from cancer_ml.plotting import set_seaborn
 from cancer_ml.load import find_and_load_sample
 
 # paths
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/samples500_val15_test15_128-128-64")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/3d/samples500_val15_test15_128-128-64")
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")
 
 train_ds = tf.data.Dataset.load(str(DSET_FOLDER / "train"))
@@ -47,6 +48,7 @@ i_post = x_align[i_section]
 print(f"Section: {i_section} in pre -> {i_post} in post")
 
 # plot
+set_seaborn()
 gtv_imgs[gtv_imgs == 0] = np.nan
 fig, axes = plt.subplots(1, 2, layout="constrained", figsize=(10, 5))
 fig.suptitle(org_name)

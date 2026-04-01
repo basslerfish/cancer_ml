@@ -42,6 +42,7 @@ def main() -> None:
     print("Best parameters:")
     for k, v in best_hps.items():
         print(f"\t {k} -> {v}")
+    best_hps["filter_sizes"] = [int(x) for x in best_hps["filter_sizes"].split("-")]
 
     print("---Load data---")
     def change_dtype(t1_imgs, gtv_imgs) -> tuple:
