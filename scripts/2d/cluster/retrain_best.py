@@ -13,6 +13,7 @@ from cancer_ml.utils import get_args_dirs
 from cancer_ml.models.base import fit_and_evaluate
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.params import get_data_params
+from cancer_ml.models.two_dims.custom import get_advanced_cnn
 
 
 # params
@@ -38,7 +39,6 @@ def main() -> None:
     best_score = best_trial.score
     print(f"Best objective: {best_score:.4f}")
     best_hps = tuner.get_best_hyperparameters(1)[0].values
-    model = tuner.get_best_models(1)[0]
     print("Best parameters:")
     for k, v in best_hps.items():
         print(f"\t {k} -> {v}")
@@ -59,10 +59,15 @@ def main() -> None:
     hparams = get_data_params(X)
 
     # set up model
+    model = get_advanced_cnn(
+        input_shape=X.shape[1:],
+        filter_sizes=best_hps["filter_sizes"],
+        dropout_rate=best_hps["dropout_rate"],
+        add_skips=best_hps["add_skips"],
+    )
     optimizer = keras.optimizers.Adam()
     loss_fn = DiceBCELoss()
     metrics = [keras.losses.Dice]
-    model = keras.models.clone_model(model)
     model.compile(
         optimizer=optimizer,
         loss=loss_fn,
