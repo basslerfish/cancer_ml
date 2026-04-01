@@ -85,7 +85,6 @@ def main() -> None:
     tb_folder = tb_dir / "2d" / date_str
     callbacks = [
         keras.callbacks.TensorBoard(tb_folder, update_freq="epoch"),
-        keras.callbacks.EarlyStopping(patience=10),
     ]
 
     # save hyperparameters
@@ -106,6 +105,7 @@ def main() -> None:
         dsets=dsets,
         model_dir=model_dir,
         callbacks=callbacks,
+        verbose=2,
     )
 
 if __name__ == "__main__":

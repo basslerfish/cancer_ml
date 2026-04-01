@@ -18,7 +18,7 @@ from cancer_ml.utils import assert_gpu_available, get_args_dirs
 # params
 MAX_TRIALS = 50
 BATCH_SIZE = 64
-N_EPOCHS = 100
+N_EPOCHS = 50
 FILTER_SIZES = {
     "16-32-64": [16, 32, 64],
     "32-64-128": [32, 64, 128],
