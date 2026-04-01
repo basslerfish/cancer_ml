@@ -31,7 +31,7 @@ I decided that I would focus on implementing the full analysis first with downsc
 I resampled all image stacks to shape 128 x 128 x 64 (xyz). I saved the T1 images as float16 and the GTV images as bool to save space. (Note that at loss calculation, the GTV data type has to be changed to float32).
 I also decided I would split the 500 samples into 70% train, 15% val and 15% test sets.
 
-<img src="images/example_preprocessing.png" alt="Training sample before and after preprocessing" width="500">
+<img src="images/example_preprocessing.png" alt="Training sample before and after preprocessing" width="600">
 
 
 ### First model fits
@@ -61,7 +61,7 @@ However, the segmentation itself remains challenging - the meningiomas make up o
 In the 2D segmentation, the best Dice loss on held-out data that I could achieve was 0.23 (DSC: 0.77) which is relatively close to the ~0.8 DSC reported in https://arxiv.org/pdf/2405.18383.
 However, this is hardly a fair comparison since the challenge solvers performed 3D segmentation on the whole T1 images (and not just the ones with cancer).
 
-<img src="images/example_predict_2d.png" alt="Example of a true and predicted cancer segmentation mask" width="500">
+<img src="images/example_predict_2d.png" alt="Example of a true and predicted cancer segmentation mask" width="600">
 
 ## Next steps
 I skipped over many details in the implementation of the custom CNNs which evolved from very basic to having more ResNet-like features like residuals, batch normalization, skip connections and a few other improvements.
