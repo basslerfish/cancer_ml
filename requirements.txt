@@ -11,3 +11,4 @@ keras-tuner
 scikit-learn
 keras-hub
 seaborn
+openpyxl

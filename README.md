@@ -68,6 +68,7 @@ I skipped over many details in the implementation of the custom CNNs which evolv
 I also implemented a Bayesian Optimization of hyperparameters with `keras_tuner` to find the best model my limited computing budget would allow me to run.
 
 That being said, there are certainly many things to improve or try out in this project:
+- use data augmentations
 - implement learning rate schedules
 - use a pretrained segmentation model
 - try a vision transformer instead of CNN
@@ -78,6 +79,6 @@ That being said, there are certainly many things to improve or try out in this p
 I started to work on using on pretrained segmentation models, choosing Deeplabv3+ as a basis for finetuning. Finetuning models can lead to greater performance at reduced computational costs as compared to training from scratch but also requires care not to destroy the model's knowledge during training (low learning rate, gradual unfreezing of layers).
 Initial results were a bit disappointing (DSC ~0.5). I suspect the reason for that is that my input resolution is too low (128 x 128 instead of 512 x 512 which the model was optimized for). This is fixable but increasing the resolution also increases computational cost.
 
-Vision transformers (ViT) can be more powerful than CNNs but are said to be more data hungry.
-I assume that therefore, finetuning a pretrained ViT makes more sense than training a ViT from scratch (though I will certainly try).
+Vision transformers (ViT) can be more powerful than CNNs but a lot of data is needed to outperform CNNs of similar sizes.
+Therefore, finetuning a pretrained ViT makes more sense than training a ViT from scratch.
 
