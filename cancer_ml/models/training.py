@@ -1,15 +1,15 @@
-from pathlib import Path
-
+"""
+Helper functions for general model training.
+"""
 import keras
-
-from cancer_ml.models.params import write_hparams
-
+import wandb
+from wandb.integration.keras import WandbMetricsLogger
 
 def fit_and_evaluate(
         model: keras.Model,
         dsets: dict,
-        model_dir: Path,
-        hparams: dict,
+        paths: dict,
+        config: dict,
         callbacks: list | None = None,
         verbose: int = 1,
 ) -> None:
@@ -17,13 +17,18 @@ def fit_and_evaluate(
     Fit and evaluate a model.
     """
     # set paths
+    model_dir = paths["model"]
     best_weights_file = model_dir / "best.weights.h5"
     final_weights_file = model_dir / "final.weights.h5"
     csv_file = model_dir / "log.csv"
 
-    # save hparams before
-    assert "n_epochs" in hparams.keys()
-    write_hparams(hparams, model_dir / "hparams.json")
+    # inuit wandb
+    wandb.init(
+        project="cancer_ml",
+        config=config,
+        name=config["meta"]["model_id"],
+        dir=paths["wandb"].parent,
+    )
 
     # prepare some standard callbacks
     if callbacks is None:
@@ -35,6 +40,7 @@ def fit_and_evaluate(
             save_best_only=True,
             monitor="val_dice"),
         keras.callbacks.CSVLogger(csv_file),
+        WandbMetricsLogger(),
     ]
     callbacks.extend(extra_callbacks)
 
@@ -42,7 +48,7 @@ def fit_and_evaluate(
     model.fit(
         dsets["train"],
         validation_data=dsets["val"],
-        epochs=hparams["n_epochs"],
+        epochs=config["training"]["epochs"],
         callbacks=callbacks,
         verbose=verbose,
     )
@@ -50,10 +56,12 @@ def fit_and_evaluate(
 
     print("---Evaluate---")
     model.load_weights(best_weights_file)
-    test_loss, test_metrics = model.evaluate(
+    scores = model.evaluate(
         dsets["test"],
         verbose=verbose,
     )
-    hparams["test_loss"] = test_loss
-    hparams["test_dice"] = test_metrics
-    write_hparams(hparams, model_dir / "hparams_finished.json")
+    scores = {
+        "test_dice": scores[0],
+    }
+    wandb.log(scores)
+    wandb.finish()

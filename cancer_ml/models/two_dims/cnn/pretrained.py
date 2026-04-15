@@ -8,7 +8,7 @@ from keras import layers
 
 def get_pretrained_resnet() -> keras.Model:
     """
-    Get ResNet 50 backbone
+    Get ResNet 50 backbone.
     ResNets scale down by factor 32 and have 2048 filters at the end.
 
     Not ideal to use because you need to manually add a decoder on top.

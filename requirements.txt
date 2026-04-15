@@ -12,3 +12,6 @@ scikit-learn
 keras-hub
 seaborn
 openpyxl
+keras-hub
+wandb
+pyyaml
