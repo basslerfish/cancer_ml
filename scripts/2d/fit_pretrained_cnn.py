@@ -31,6 +31,7 @@ def preprocess(some_X: tf.Tensor, some_y: tf.Tensor) -> tuple:
     # add channels to X
     some_X = tf.image.grayscale_to_rgb(some_X)
     some_X = tf.cast(some_X, tf.float32)
+    some_X = some_X / 255.0
 
     # change dtype
     some_y = tf.cast(some_y, tf.float32)

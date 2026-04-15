@@ -20,10 +20,13 @@ module load cuDNN/9.5.0.50-CUDA-12.6.0
 
 #install packages
 echo "---INSTALLING PACKAGES---"
-pip install --user pandas matplotlib numpy scipy keras-hub
+pip install --user pandas matplotlib numpy scipy keras-hub wandb
 pip install --user -e "$HOME"/github/cancer_ml
 
-#COpy files
+#setup wandb
+export WANDB_API_KEY=$(cat "$HOME"/wandb.key)
+
+#Copy files
 echo "---COPYING FILES---"
 mkdir -p "$TMPDIR"/data
 cp -r "$HOME"/data/cancer/2d/samples500_uint8_val15_test15_128-128 "$TMPDIR"/data
