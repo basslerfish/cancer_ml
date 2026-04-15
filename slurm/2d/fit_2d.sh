@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=fit_2d
+#SBATCH --job-name=fit_2d_cnn
 #SBATCH --output=/home/mbassler/slurm_logs/cancer_ml/%x_%j.log
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
@@ -31,10 +31,11 @@ ls "$TMPDIR"/data
 
 #Run very simple script
 echo "---RUNNING PYTHON SCRIPT---"
-python "$HOME"/github/cancer_ml/scripts/2d/cluster/fit_advanced.py \
+python "$HOME"/github/cancer_ml/scripts/2d/fit_advanced_cnn.py \
   --data_dir "$TMPDIR"/data/samples500_zscore_val15_test15_128-128 \
   --output_dir "$HOME"/output/cancer_ml/2d/ \
-  --tb_dir "$HOME"/output/cancer_ml/tb_runs
+  --wandb_dir "$HOME"/output/cancer_ml/wandb \
+  --config_file "$HOME"/github/cancer_ml/data/configs/advanced_cnn.yaml \
 
 #log end
 echo "---COMPLETED---"
