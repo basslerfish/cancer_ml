@@ -38,7 +38,9 @@ def residual_strided_block(
 ) -> tf.Tensor:
     """
     A downsampling block with 2x conv2d, batch norm and residuals.
-    ReLU is exchanged for Swish.
+    This block design follows the 2015 "Deep Residual Learning for Image Recognition" paper.
+    ReLU is replaced with Swish.
+    Dropout is optional, apparently BatchNorm and dropout don't always get along.
     """
     residual = x
     x = layers.Conv2D(filter_size, kernel_size, padding="same", strides=strides, use_bias=False)(x)
@@ -95,19 +97,20 @@ def get_advanced_cnn(
         dropout_rate: float = 0,
 ) -> keras.Model:
     """
-    Advanced CNN.
+    Advanced encoder-decoder CNN with residual and skip connections.
     """
     input = keras.Input(input_shape)
-    x = input
 
+    # encoder
+    x = input
     if add_skips:
         skips = []
-
     for fs in filter_sizes:
         if add_skips:
             skips.append(x)
         x = residual_strided_block(x, fs, strides=strides, kernel_size=kernel_size, dropout_rate=dropout_rate)
 
+    # decoder
     for i_fs, fs in enumerate(filter_sizes[::-1]):
         x = upsampling_block(x, fs, strides=strides, kernel_size=kernel_size)
         if add_skips:
