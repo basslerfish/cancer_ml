@@ -35,7 +35,6 @@ def get_pretrained_deeplab(num_classes: int = 1) -> keras.Model:
 def dl_unfreeze_last(model: keras.Model) -> keras.Model:
     """
     Unfreeze last layer of deeplab model.
-    This does not seem to work very well
     """
     model.trainable = True
     model.backbone.trainable = False  # let's not modify the resnet backbone
@@ -62,4 +61,6 @@ def dl_unfreeze_aspp_decoder(model, also_batch_norm: bool = False) -> keras.Mode
 def unfreeze_all(model: keras.Model) -> keras.Model:
     """Unfreeze all weights for training."""
     model.trainable = True
+    for this_layer in model.layers:
+        this_layer.trainable = True
     return model
