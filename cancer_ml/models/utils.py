@@ -7,6 +7,15 @@ import numpy as np
 from keras.src.utils.summary_utils import count_params
 
 
+def get_recursive_description(model: keras.Model | keras.Layer, depth: int = 0) -> None:
+    """Get recursive description"""
+    for layer in model.layers:
+        trainable = layer.trainable
+        print(depth, "\t" * depth, f"{layer.name} (trainable={trainable}, params={layer.count_params():,})")
+        if hasattr(layer, "layers"):
+            get_recursive_description(layer, depth + 1)
+
+
 def get_param_count(model: keras.Model) -> dict:
     """Get number of trainable parameters in a model."""
     trainable = count_params(model.trainable_weights)

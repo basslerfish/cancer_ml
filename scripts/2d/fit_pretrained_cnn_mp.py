@@ -106,6 +106,7 @@ for i_phase in range(3):
     elif i_phase == 1:  # aspp and decoder
         model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
     else:  # everything
+        model.backbone.trainable = True
         model.trainable = True
     optimizer = keras.optimizers.Adam(
         learning_rate=phase_lrs[i_phase])

@@ -1,14 +1,20 @@
 """
 Fit a pretrained vision transformer on the cancer segmentation task.
 
-TODO: unfreeze some layers, then train!
+TODO: consider learning rate scheduler
 """
+import datetime
+import os
+
+import keras.losses
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.two_dims.transformer.pretrained import get_pretrained_model
+from cancer_ml.models.two_dims.transformer.pretrained import get_pretrained_model, unfreeze_final
 from cancer_ml.paths import get_arg_paths
-from cancer_ml.models.params import get_data_params
+from cancer_ml.models.utils import get_data_info, get_param_count, get_recursive_description
+from cancer_ml.models.loss import DiceBCELoss
+from cancer_ml.models.training import fit_and_evaluate
 
 # set paths
 paths = get_arg_paths()
@@ -32,12 +38,39 @@ for name in ["train", "val", "test"]:
     dsets[name] = ds
 
 # get basic info
-X, y = next(iter(dsets["train"].take(1)))
-input_shape = X.shape[1:]
-print(get_data_params(X))
-print(f"{X.shape=}")
+data_info = get_data_info(dsets)
+print(f"Batch shape: {data_info['batch_shape']}")
 
 # go!
 model = get_pretrained_model()
-model(X)
+model = unfreeze_final(model)
 
+print("---Model layers---")
+get_recursive_description(model)
+optimizer = keras.optimizers.Adam(learning_rate=config["training"]["learning_rate"])
+model.compile(
+    optimizer=optimizer,
+    loss=DiceBCELoss(),
+    metrics=[keras.losses.Dice()],
+)
+param_counts = get_param_count(model)
+print(f"Trainable weights: {param_counts['trainable_weights']:,}")
+print(f"Non-trainable weights: {param_counts['non_trainable_weights']:,}")
+
+# prep output
+date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+model_id = f"pretrained_vit_{date_str}"
+config["meta"] = {"model_id": model_id, **param_counts}
+print(f"Model ID: {model_id}")
+model_dir = paths["output"] / "2d" / model_id
+paths["model"] = model_dir
+os.makedirs(model_dir)
+
+print("---Fit---")
+fit_and_evaluate(
+    model=model,
+    dsets=dsets,
+    config=config,
+    paths=paths,
+    verbose=1,
+)
