@@ -104,7 +104,7 @@ for i_phase in range(3):
     if i_phase == 0:  # only final layer
         model = dl_unfreeze_last(model)
     elif i_phase == 1:  # aspp and decoder
-        model = dl_unfreeze_aspp_decoder(model)
+        model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
     else:  # everything
         model.trainable = True
     optimizer = keras.optimizers.Adam(
