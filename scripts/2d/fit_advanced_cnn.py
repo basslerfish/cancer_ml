@@ -1,5 +1,5 @@
 """
-Fit a CNN to predict segmentation mask on 2D images.
+Fit a custom CNN to predict segmentation mask on 2D images.
 """
 import datetime
 import os
@@ -10,14 +10,14 @@ import yaml
 
 from cancer_ml.models.two_dims.cnn.custom import get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.models.params import get_data_params
+from cancer_ml.models.utils import get_data_info, get_param_count
 from cancer_ml.models.training import fit_and_evaluate
 from cancer_ml.paths import get_arg_paths
 
-# set paths
+# set paths & load config
 paths = get_arg_paths()
-
-# load config
+assert paths["data"].is_dir()
+assert paths["config"].is_file()
 with open(paths["config"], "r") as file:
     config = yaml.safe_load(file)
 
@@ -34,14 +34,13 @@ for name in ["train", "val", "test"]:
     dsets[name] = ds
 
 # get basic info
-X, y = next(iter(dsets["train"].take(1)))
-config["data"] = get_data_params(X)
-input_shape = X.shape[1:]
-print(f"{X.shape=}")
+data_info = get_data_info(dsets)
+config["data"] = data_info
+print(f"Batch shape: {config['data']['batch_shape']}")
 
 # make model
 model = get_advanced_cnn(
-    input_shape,
+    data_info["batch_shape"],
     filter_sizes=config["model"]["filter_sizes"],
     dropout_rate=config["model"]["dropout"],
     add_skips=config["model"]["add_skips"],
@@ -58,11 +57,14 @@ model.compile(
     loss=loss_fn,
     metrics=metrics
 )
+weight_counts = get_param_count(model)
+print(f"Trainable weights: {weight_counts['trainable_weights']:,}")
+print(f"Non-trainable weights: {weight_counts['non_trainable_weights']:,}")
 
 # prepare output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 model_id = f"cnn_{date_str}"
-config["meta"] = {"model_id": model_id}
+config["meta"] = {"model_id": model_id, **weight_counts}
 print(f"Model ID: {model_id}")
 
 model_dir = paths["output"] / "2d" / model_id

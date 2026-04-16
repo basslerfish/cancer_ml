@@ -4,3 +4,4 @@ results/
 .idea/
 *.pyc
 images/archive/
+**/tea_debug.log

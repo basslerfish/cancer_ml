@@ -1,8 +1,8 @@
 """
 Fit a pretrained vision transformer on the cancer segmentation task.
-"""
-from pathlib import Path
 
+TODO: unfreeze some layers, then train!
+"""
 import tensorflow as tf
 import yaml
 

@@ -10,7 +10,7 @@ import keras
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.params import get_data_params
+from cancer_ml.models.utils import get_param_count, get_data_info
 from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.training import fit_and_evaluate
@@ -18,6 +18,8 @@ from cancer_ml.paths import get_arg_paths
 
 # get paths & config
 paths = get_arg_paths()
+assert paths["data"].is_dir()
+assert paths["config"].is_file()
 with open(paths["config"], "r") as file:
     config = yaml.safe_load(file)
 
@@ -46,17 +48,17 @@ for name in ["train", "val", "test"]:
 
 
 # get basic info
-X, y = next(iter(dsets["train"].take(1)))
-config["data"] = get_data_params(X)
-input_shape = X.shape
-assert X.ndim == 4
-assert X.shape[-1] == 3  # should be 3 channels for pretrained
+data_info = get_data_info(dsets)
+config["data"] = data_info
+batch_shape = data_info["batch_shape"]
+assert len(batch_shape) == 4
+print(f"Batch shape: {batch_shape}")
 
 # load model
 print("---Load model---")
 model = get_pretrained_deeplab()
 model = dl_unfreeze_aspp_decoder(model)
-model.preprocessor.image_converter.image_size = (X.shape[1], X.shape[2])
+model.preprocessor.image_converter.image_size = (batch_shape[1], batch_shape[2])
 optimizer = keras.optimizers.Adam()
 loss_fn = DiceBCELoss()
 metrics = [keras.losses.Dice()]
@@ -65,11 +67,14 @@ model.compile(
     loss=loss_fn,
     metrics=metrics,
 )
+weight_counts = get_param_count(model)
+print(f"Trainable weights: {weight_counts['trainable_weights']:,}")
+print(f"Non-trainable weights: {weight_counts['non_trainable_weights']:,}")
 
 # prep output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 model_id = f"deeplab_{date_str}"
-config["meta"] = {"model_id": model_id}
+config["meta"] = {"model_id": model_id, **weight_counts}
 print(f"Model ID: {model_id}")
 model_dir = paths["output"] / "2d" / model_id
 paths["model"] = model_dir

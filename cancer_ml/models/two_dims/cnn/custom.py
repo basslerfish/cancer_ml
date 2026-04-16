@@ -99,6 +99,9 @@ def get_advanced_cnn(
     """
     Advanced encoder-decoder CNN with residual and skip connections.
     """
+    if len(input_shape) == 4:  # batch_size, x, y, n_channels
+        input_shape = input_shape[1:]
+    assert len(input_shape) == 3
     input = keras.Input(input_shape)
 
     # encoder
