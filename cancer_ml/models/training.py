@@ -5,6 +5,7 @@ import keras
 import wandb
 from wandb.integration.keras import WandbMetricsLogger
 
+
 def fit_and_evaluate(
         model: keras.Model,
         dsets: dict,
@@ -66,3 +67,11 @@ def fit_and_evaluate(
     }
     wandb.log(scores)
     wandb.finish()
+
+
+def unfreeze_all(model: keras.Model) -> keras.Model:
+    """Unfreeze all weights for training."""
+    model.trainable = True
+    for this_layer in model.layers:
+        this_layer.trainable = True
+    return model

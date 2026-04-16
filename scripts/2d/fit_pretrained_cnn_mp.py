@@ -11,13 +11,13 @@ import keras
 import tensorflow as tf
 import wandb
 import yaml
-
-from cancer_ml.models.utils import get_param_count, get_data_info
-from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder, dl_unfreeze_last
-from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.paths import get_arg_paths
 from wandb.integration.keras import WandbMetricsLogger
 
+from cancer_ml.models.utils import get_param_count, get_data_info
+from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, unfreeze_aspp_decoder, unfreeze_last
+from cancer_ml.models.loss import DiceBCELoss
+from cancer_ml.paths import get_arg_paths
+from cancer_ml.models.training import unfreeze_all
 
 # get paths & config
 paths = get_arg_paths()
@@ -47,8 +47,8 @@ dsets = {}
 for name in ["train", "val", "test"]:
     ds = tf.data.Dataset.load(str(paths["data"] / name))
     ds = ds.map(preprocess).batch(config["training"]["batch_size"])
+    ds = ds.prefetch(tf.data.AUTOTUNE)
     dsets[name] = ds
-
 
 # get basic info
 data_info = get_data_info(dsets)
@@ -61,9 +61,6 @@ print(f"Batch shape: {batch_shape}")
 print("---Load model---")
 model = get_pretrained_deeplab()
 model.preprocessor.image_converter.image_size = (batch_shape[1], batch_shape[2])
-
-phase_lrs = config["training"]["phases_lr"]
-phase_epochs = config["training"]["phases_epochs"]
 loss_fn = DiceBCELoss()
 metrics = [keras.losses.Dice()]
 
@@ -98,18 +95,27 @@ callbacks = [
     WandbMetricsLogger(),
 ]
 
+phases_unfreeze = config["training"]["phases_unfreeze"]
+phase_lrs = config["training"]["phases_lr"]
+phase_epochs = config["training"]["phases_epochs"]
 current_epoch = 0
-for i_phase in range(3):
-    print(f"---Fit: Phase {i_phase}---")
-    if i_phase == 0:  # only final layer
-        model = dl_unfreeze_last(model)
-    elif i_phase == 1:  # aspp and decoder
-        model = dl_unfreeze_aspp_decoder(model, also_batch_norm=True)
-    else:  # everything
-        model.backbone.trainable = True
-        model.trainable = True
+for i_phase in range(len(phases_unfreeze)):
+    this_unfreeze = phases_unfreeze[i_phase]
+    this_lr = phase_lrs[i_phase]
+    this_epochs = phase_epochs[i_phase]
+
+    print(f"---Fit: Phase {i_phase} {this_unfreeze}---")
+    if this_unfreeze == "final":  # only final layer
+        model = unfreeze_last(model)
+    elif this_unfreeze == "aspp":  # aspp and decoder
+        model = unfreeze_aspp_decoder(model, also_batch_norm=True)
+    elif this_unfreeze == "all":
+        model = unfreeze_all(model)
+    else:
+        raise ValueError(f"{this_unfreeze=} unknown")
+
     optimizer = keras.optimizers.Adam(
-        learning_rate=phase_lrs[i_phase])
+        learning_rate=this_lr)
     model.compile(
         optimizer=optimizer,
         loss=loss_fn,
@@ -120,8 +126,8 @@ for i_phase in range(3):
     print(f"Non-trainable weights: {weight_counts['non_trainable_weights']:,}")
 
      # go!
-    config["training"]["learning_rate"] = phase_lrs[i_phase]
-    config["training"]["epochs"] = phase_epochs[i_phase] + current_epoch
+    config["training"]["learning_rate"] = this_lr
+    config["training"]["epochs"] = this_epochs + current_epoch
 
     model.fit(
         dsets["train"],

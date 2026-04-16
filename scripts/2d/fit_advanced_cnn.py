@@ -31,6 +31,7 @@ dsets = {}
 for name in ["train", "val", "test"]:
     ds = tf.data.Dataset.load(str(paths["data"] / name))
     ds = ds.map(change_dtype).batch(config["training"]["batch_size"])
+    ds = ds.prefetch(tf.data.AUTOTUNE)
     dsets[name] = ds
 
 # get basic info

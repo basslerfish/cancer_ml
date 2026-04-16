@@ -10,11 +10,11 @@ import keras.losses
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.two_dims.transformer.pretrained import get_pretrained_model, unfreeze_final
+from cancer_ml.models.two_dims.transformer.pretrained import get_pretrained_model, unfreeze_final, unfreeze_post_encoder
 from cancer_ml.paths import get_arg_paths
 from cancer_ml.models.utils import get_data_info, get_param_count, get_recursive_description
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.models.training import fit_and_evaluate
+from cancer_ml.models.training import fit_and_evaluate, unfreeze_all
 
 # set paths
 paths = get_arg_paths()
@@ -35,6 +35,7 @@ dsets = {}
 for name in ["train", "val", "test"]:
     ds = tf.data.Dataset.load(str(paths["data"] / name))
     ds = ds.map(change_dtype).batch(config["training"]["batch_size"])
+    ds = ds.prefetch(tf.data.AUTOTUNE)
     dsets[name] = ds
 
 # get basic info
@@ -43,7 +44,16 @@ print(f"Batch shape: {data_info['batch_shape']}")
 
 # go!
 model = get_pretrained_model()
-model = unfreeze_final(model)
+unfreeze_mode = config["training"]["unfreeze"]
+print(f"Unfreeze mode: {unfreeze_mode}")
+if unfreeze_mode == "all":
+    model = unfreeze_all(model)
+elif unfreeze_mode == "decoder":
+    model = unfreeze_post_encoder(model)
+elif unfreeze_mode == "final":
+    model = unfreeze_final(model)
+else:
+    raise ValueError(f"{unfreeze_mode=} unknown.")
 
 print("---Model layers---")
 get_recursive_description(model)
@@ -56,6 +66,7 @@ model.compile(
 param_counts = get_param_count(model)
 print(f"Trainable weights: {param_counts['trainable_weights']:,}")
 print(f"Non-trainable weights: {param_counts['non_trainable_weights']:,}")
+assert False
 
 # prep output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -72,5 +83,5 @@ fit_and_evaluate(
     dsets=dsets,
     config=config,
     paths=paths,
-    verbose=1,
+    verbose=2,
 )

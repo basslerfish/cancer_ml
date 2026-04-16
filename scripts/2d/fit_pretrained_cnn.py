@@ -11,9 +11,9 @@ import tensorflow as tf
 import yaml
 
 from cancer_ml.models.utils import get_param_count, get_data_info
-from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, dl_unfreeze_aspp_decoder
+from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, unfreeze_last, unfreeze_aspp_decoder
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.models.training import fit_and_evaluate
+from cancer_ml.models.training import fit_and_evaluate, unfreeze_all
 from cancer_ml.paths import get_arg_paths
 
 # get paths & config
@@ -44,6 +44,7 @@ dsets = {}
 for name in ["train", "val", "test"]:
     ds = tf.data.Dataset.load(str(paths["data"] / name))
     ds = ds.map(preprocess).batch(config["training"]["batch_size"])
+    ds = ds.prefetch(tf.data.AUTOTUNE)
     dsets[name] = ds
 
 
@@ -57,7 +58,15 @@ print(f"Batch shape: {batch_shape}")
 # load model
 print("---Load model---")
 model = get_pretrained_deeplab()
-model = dl_unfreeze_aspp_decoder(model)
+if config["unfreeze"] == "all":
+    model = unfreeze_all(model)
+elif config["unfreeze"] == "aspp":
+    model = unfreeze_aspp_decoder(model)
+elif config["unfreeze"] == "final":
+    model = unfreeze_last(model)
+else:
+    raise ValueError(f"{config['unfreeze']}")
+
 model.preprocessor.image_converter.image_size = (batch_shape[1], batch_shape[2])
 optimizer = keras.optimizers.Adam()
 loss_fn = DiceBCELoss()
@@ -79,9 +88,7 @@ print(f"Model ID: {model_id}")
 model_dir = paths["output"] / "2d" / model_id
 paths["model"] = model_dir
 os.makedirs(model_dir, exist_ok=True)
-callbacks = [
-    keras.callbacks.EarlyStopping(patience=config["training"]["patience"]),
-]
+callbacks = []
  # go!
 fit_and_evaluate(
     model=model,
