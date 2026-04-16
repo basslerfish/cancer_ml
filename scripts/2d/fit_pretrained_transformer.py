@@ -66,7 +66,6 @@ model.compile(
 param_counts = get_param_count(model)
 print(f"Trainable weights: {param_counts['trainable_weights']:,}")
 print(f"Non-trainable weights: {param_counts['non_trainable_weights']:,}")
-assert False
 
 # prep output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
