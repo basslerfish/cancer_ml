@@ -58,11 +58,12 @@ print(f"Batch shape: {batch_shape}")
 # load model
 print("---Load model---")
 model = get_pretrained_deeplab()
-if config["unfreeze"] == "all":
+unfreeze_mode = config["training"]["unfreeze"]
+if unfreeze_mode == "all":
     model = unfreeze_all(model)
-elif config["unfreeze"] == "aspp":
+elif unfreeze_mode == "aspp":
     model = unfreeze_aspp_decoder(model)
-elif config["unfreeze"] == "final":
+elif unfreeze_mode == "final":
     model = unfreeze_last(model)
 else:
     raise ValueError(f"{config['unfreeze']}")
