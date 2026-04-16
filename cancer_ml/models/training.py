@@ -61,7 +61,8 @@ def fit_and_evaluate(
         verbose=verbose,
     )
     scores = {
-        "test_dice": scores[0],
+        "test_loss": scores[0],
+        "test_dice": scores[1],
     }
     wandb.log(scores)
     wandb.finish()
