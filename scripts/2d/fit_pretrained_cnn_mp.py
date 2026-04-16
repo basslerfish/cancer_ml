@@ -120,7 +120,7 @@ for i_phase in range(3):
 
      # go!
     config["training"]["learning_rate"] = phase_lrs[i_phase]
-    config["training"]["epochs"] = phase_epochs[i_phase]
+    config["training"]["epochs"] = phase_epochs[i_phase] + current_epoch
 
     model.fit(
         dsets["train"],
@@ -128,6 +128,7 @@ for i_phase in range(3):
         epochs=config["training"]["epochs"],
         callbacks=callbacks,
         initial_epoch=current_epoch,
+        verbose=2,
     )
     model.save_weights(final_weights_file)
     current_epoch += phase_epochs[i_phase]
@@ -135,7 +136,8 @@ for i_phase in range(3):
 
 model.load_weights(best_weights_file)
 scores = model.evaluate(
-    dsets["test"]
+    dsets["test"],
+    verbose=2,
 )
 scores = {
     "test_dice": scores[0],
