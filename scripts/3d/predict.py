@@ -6,7 +6,6 @@ import tensorflow as tf
 
 from cancer_ml.models.three_dims import get_simple_cnn
 
-
 # go!
 MODEL_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/models/3d/32-64_64-128-128-1")
 DSET_DIR = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/samples500_val15_test15_128-128-64")

@@ -8,13 +8,12 @@ import keras
 import keras_tuner as kt
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.search import build_model
-from cancer_ml.utils import get_args_dirs
 from cancer_ml.models.base import fit_and_evaluate
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.params import get_data_params
 from cancer_ml.models.two_dims.custom import get_advanced_cnn
-
+from cancer_ml.models.two_dims.search import build_model
+from cancer_ml.utils import get_args_dirs
 
 # params
 BATCH_SIZE = 128

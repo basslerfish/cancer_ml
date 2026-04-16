@@ -6,8 +6,9 @@ Images: x, y, z
 """
 import os
 from pathlib import Path
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 
 from cancer_ml.load import find_and_load_sample

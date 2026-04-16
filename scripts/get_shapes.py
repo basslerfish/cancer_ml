@@ -4,8 +4,8 @@ The T1 and GTV data shapes are apparently not standardized.
 
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from cancer_ml.load import find_and_load_sample
 

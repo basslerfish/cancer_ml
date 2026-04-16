@@ -6,9 +6,9 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from cancer_ml.preprocess import (load_tf, resize_stacks, clip_t1, change_dims_3d, zscore_t1, minmax_t1,
-                                  remove_unannotated_sections, split_sample_folders, )
-
+from cancer_ml.preprocess import (change_dims_3d, clip_t1, load_tf, minmax_t1,
+                                  remove_unannotated_sections, resize_stacks,
+                                  split_sample_folders, zscore_t1)
 
 # params
 SOURCE = Path("/Users/mathis/Code/private_projects/cancer_ml/data/BraTS-MEN-RT-Train-v2")

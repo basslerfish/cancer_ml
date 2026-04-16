@@ -4,8 +4,8 @@ We again use the Deeplabv3+.
 
 We gradually unfreeze more parts of the model.
 """
-import os
 import datetime
+import os
 
 import keras
 import tensorflow as tf
@@ -13,11 +13,13 @@ import wandb
 import yaml
 from wandb.integration.keras import WandbMetricsLogger
 
-from cancer_ml.models.utils import get_param_count, get_data_info
-from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, unfreeze_aspp_decoder, unfreeze_last
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.paths import get_arg_paths
 from cancer_ml.models.training import unfreeze_all
+from cancer_ml.models.two_dims.cnn.pretrained import (get_pretrained_deeplab,
+                                                      unfreeze_aspp_decoder,
+                                                      unfreeze_last)
+from cancer_ml.models.utils import get_data_info, get_param_count
+from cancer_ml.paths import get_arg_paths
 
 # get paths & config
 paths = get_arg_paths()

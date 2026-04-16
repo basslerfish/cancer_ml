@@ -8,11 +8,10 @@ from pathlib import Path
 import keras
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_simple_cnn
+from cancer_ml.models.base import fit_and_evaluate
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.params import get_data_params, write_hparams
-from cancer_ml.models.base import fit_and_evaluate
-
+from cancer_ml.models.two_dims.custom import get_simple_cnn
 
 # params
 DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_zscore_val15_test15_128-128")

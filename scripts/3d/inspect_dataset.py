@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from cancer_ml.plotting import set_seaborn
 from cancer_ml.load import find_and_load_sample
+from cancer_ml.plotting import set_seaborn
 
 # paths
 DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/3d/samples500_val15_test15_128-128-64")

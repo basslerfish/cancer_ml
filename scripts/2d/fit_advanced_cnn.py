@@ -8,10 +8,10 @@ import keras
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.two_dims.cnn.custom import get_advanced_cnn
 from cancer_ml.models.loss import DiceBCELoss
-from cancer_ml.models.utils import get_data_info, get_param_count
 from cancer_ml.models.training import fit_and_evaluate
+from cancer_ml.models.two_dims.cnn.custom import get_advanced_cnn
+from cancer_ml.models.utils import get_data_info, get_param_count
 from cancer_ml.paths import get_arg_paths
 
 # set paths & load config

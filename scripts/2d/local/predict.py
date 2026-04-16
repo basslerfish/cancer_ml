@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_simple_cnn, get_advanced_cnn
 from cancer_ml.models.params import read_hparams
+from cancer_ml.models.two_dims.custom import get_advanced_cnn, get_simple_cnn
 from cancer_ml.plotting import set_seaborn
 
 # params

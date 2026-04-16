@@ -10,11 +10,13 @@ import keras.losses
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.two_dims.transformer.pretrained import get_pretrained_model, unfreeze_final, unfreeze_post_encoder
-from cancer_ml.paths import get_arg_paths
-from cancer_ml.models.utils import get_data_info, get_param_count, get_recursive_description
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.training import fit_and_evaluate, unfreeze_all
+from cancer_ml.models.two_dims.transformer.pretrained import (
+    get_pretrained_model, unfreeze_final, unfreeze_post_encoder)
+from cancer_ml.models.utils import (get_data_info, get_param_count,
+                                    get_recursive_description)
+from cancer_ml.paths import get_arg_paths
 
 # set paths
 paths = get_arg_paths()

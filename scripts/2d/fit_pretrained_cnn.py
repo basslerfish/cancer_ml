@@ -3,17 +3,19 @@ Let's fit a pretrained segmentation model to our data.
 We use DeepLabv3+ here. This is an encoder-decoder CNN with a special atrous spatial pyramid pooling (ASPP) head.
 We only unfreeze the ASPP head and the decoder, leaving the encoder unaffected.
 """
-import os
 import datetime
+import os
 
 import keras
 import tensorflow as tf
 import yaml
 
-from cancer_ml.models.utils import get_param_count, get_data_info
-from cancer_ml.models.two_dims.cnn.pretrained import get_pretrained_deeplab, unfreeze_last, unfreeze_aspp_decoder
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.training import fit_and_evaluate, unfreeze_all
+from cancer_ml.models.two_dims.cnn.pretrained import (get_pretrained_deeplab,
+                                                      unfreeze_aspp_decoder,
+                                                      unfreeze_last)
+from cancer_ml.models.utils import get_data_info, get_param_count
 from cancer_ml.paths import get_arg_paths
 
 # get paths & config

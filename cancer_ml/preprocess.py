@@ -8,7 +8,8 @@ import pandas as pd
 import scipy
 import tensorflow as tf
 
-from cancer_ml.load import find_sample_folders, find_t1_and_gtv_files, load_images
+from cancer_ml.load import (find_sample_folders, find_t1_and_gtv_files,
+                            load_images)
 
 
 def split_sample_folders(

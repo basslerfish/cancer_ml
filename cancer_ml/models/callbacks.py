@@ -3,6 +3,7 @@ Custom keras callbacks.
 """
 import keras
 
+
 class UnfreezeCallBack(keras.callbacks.Callback):
     """
     Unfreeze full model at some epoch.

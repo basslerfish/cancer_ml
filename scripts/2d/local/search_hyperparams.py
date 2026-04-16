@@ -8,8 +8,8 @@ import keras
 import keras_tuner as kt
 import tensorflow as tf
 
-from cancer_ml.models.two_dims.custom import get_flexible_model
 from cancer_ml.models.loss import DiceBCELoss
+from cancer_ml.models.two_dims.custom import get_flexible_model
 
 # params
 MAX_TRIALS = 50

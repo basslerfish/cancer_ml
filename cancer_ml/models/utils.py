@@ -3,7 +3,6 @@ Misc functions related to model training.
 """
 import keras
 import numpy as np
-
 from keras.src.utils.summary_utils import count_params
 
 

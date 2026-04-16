@@ -12,7 +12,6 @@ import tensorflow as tf
 
 from cancer_ml.preprocess import remove_unannotated_sections
 
-
 # params
 DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/3d/samples500_val15_test15_128-128-64")
 
