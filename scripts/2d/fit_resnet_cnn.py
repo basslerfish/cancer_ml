@@ -6,13 +6,13 @@ import os
 
 import keras
 import tensorflow as tf
-import yaml
 
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.training import fit_and_evaluate
 from cancer_ml.models.two_dims.cnn.resnet import get_resnet_cnn
 from cancer_ml.models.utils import get_data_info, get_param_count, load_config_yaml
 from cancer_ml.paths import get_arg_paths
+from cancer_ml.models.callbacks import PredictionPlotCallback
 
 # set paths & load config
 paths = get_arg_paths()
@@ -58,7 +58,7 @@ weight_counts = get_param_count(model)
 
 # prepare output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-model_id = f"cnn_{date_str}"
+model_id = f"resnet_cnn_{date_str}"
 if "meta" not in config.keys():
     config["meta"] = {}
 config["meta"].update({"model_id": model_id, **weight_counts})
@@ -68,9 +68,14 @@ model_dir = paths["output"] / "2d" / model_id
 os.makedirs(model_dir, exist_ok=True)
 paths["model"] = model_dir
 callbacks = [
-    keras.callbacks.EarlyStopping(patience=config["training"]["patience"]),
+    PredictionPlotCallback(
+        model=model,
+        output_folder=model_dir,
+        dset=dsets["val"],
+        every_n_epoch=1,
+        use_wandb=config["meta"]["use_wandb"],
+    )
 ]
-
 # go!
 fit_and_evaluate(
     model=model,
