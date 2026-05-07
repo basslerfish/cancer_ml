@@ -1,10 +1,10 @@
 """
 Very simple CNN.
 """
-
 import keras
 import numpy as np
 from keras import layers
+
 
 def get_simple_cnn(
         input_shape: list | tuple | np.ndarray,

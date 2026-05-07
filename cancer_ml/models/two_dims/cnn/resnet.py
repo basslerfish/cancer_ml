@@ -17,6 +17,7 @@ def residual_strided_block(
 ) -> tf.Tensor:
     """
     A downsampling block with 2x conv2d, batch norm and residuals.
+    1st conv has kernel size of 3, second has kernel size of 1.
     This block design follows the 2015 "Deep Residual Learning for Image Recognition" paper.
     ReLU is replaced with Swish.
     Dropout is optional, apparently BatchNorm and dropout don't always get along.
