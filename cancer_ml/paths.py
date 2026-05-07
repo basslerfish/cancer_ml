@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 
 
-def get_arg_paths() -> dict:
+def get_arg_paths(verbose: bool = True) -> dict:
     """Use argparse to get directories."""
     parser = argparse.ArgumentParser()
     arg_names = ["data_dir", "output_dir", "wandb_dir", "tb_dir", "config_file"]
@@ -13,6 +13,8 @@ def get_arg_paths() -> dict:
         parser.add_argument(f"--{arg_name}")
     args = parser.parse_args()
 
+    if verbose:
+        print("Paths:")
     directories = {}
     for arg_name in arg_names:
         this_arg = getattr(args, arg_name)
@@ -20,4 +22,6 @@ def get_arg_paths() -> dict:
             this_arg = Path(this_arg)
         key = arg_name.split("_")[0]
         directories[key] = this_arg
+        if verbose:
+            print(f"\t {key} -> {this_arg}")
     return directories

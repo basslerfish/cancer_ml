@@ -5,3 +5,4 @@ results/
 *.pyc
 images/archive/
 **/tea_debug.log
+configs/

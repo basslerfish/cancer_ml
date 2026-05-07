@@ -23,13 +23,17 @@ def fit_and_evaluate(
     final_weights_file = model_dir / "final.weights.h5"
     csv_file = model_dir / "log.csv"
 
-    # inuit wandb
-    wandb.init(
-        project="cancer_ml",
-        config=config,
-        name=config["meta"]["model_id"],
-        dir=paths["wandb"].parent,
-    )
+    # init wandb
+    if "use_wandb" not in config["meta"]:
+        config["meta"]["use_wandb"] = False
+    if config["meta"]["use_wandb"]:
+        print("Starting WandB.")
+        wandb.init(
+            project="cancer_ml",
+            config=config,
+            name=config["meta"]["model_id"],
+            dir=paths["wandb"].parent,
+        )
 
     # prepare some standard callbacks
     if callbacks is None:
@@ -41,8 +45,16 @@ def fit_and_evaluate(
             save_best_only=True,
             monitor="val_dice"),
         keras.callbacks.CSVLogger(csv_file),
-        WandbMetricsLogger(),
     ]
+    if "patience" in config["training"]:
+        patience = config["training"]["patience"]
+        if patience > 0:
+            print(f"Early stopping: {patience}")
+            cb = keras.callbacks.EarlyStopping(patience=patience)
+            extra_callbacks.append(cb)
+    if config["meta"]["use_wandb"]:
+        cb = WandbMetricsLogger()
+        extra_callbacks.append(cb)
     callbacks.extend(extra_callbacks)
 
     print("---Fit---")
@@ -65,8 +77,10 @@ def fit_and_evaluate(
         "test_loss": scores[0],
         "test_dice": scores[1],
     }
-    wandb.log(scores)
-    wandb.finish()
+
+    if config["meta"]["use_wandb"]:
+        wandb.log(scores)
+        wandb.finish()
 
 
 def unfreeze_all(model: keras.Model) -> keras.Model:

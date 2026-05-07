@@ -10,16 +10,15 @@ import yaml
 
 from cancer_ml.models.loss import DiceBCELoss
 from cancer_ml.models.training import fit_and_evaluate
-from cancer_ml.models.two_dims.cnn.custom import get_advanced_cnn
-from cancer_ml.models.utils import get_data_info, get_param_count
+from cancer_ml.models.two_dims.cnn.resnet import get_resnet_cnn
+from cancer_ml.models.utils import get_data_info, get_param_count, load_config_yaml
 from cancer_ml.paths import get_arg_paths
 
 # set paths & load config
 paths = get_arg_paths()
 assert paths["data"].is_dir()
 assert paths["config"].is_file()
-with open(paths["config"], "r") as file:
-    config = yaml.safe_load(file)
+config = load_config_yaml(paths["config"])
 
 # load data
 def change_dtype(some_X, some_y) -> tuple:
@@ -33,14 +32,11 @@ for name in ["train", "val", "test"]:
     ds = ds.map(change_dtype).batch(config["training"]["batch_size"])
     ds = ds.prefetch(tf.data.AUTOTUNE)
     dsets[name] = ds
-
-# get basic info
 data_info = get_data_info(dsets)
 config["data"] = data_info
-print(f"Batch shape: {config['data']['batch_shape']}")
 
 # make model
-model = get_advanced_cnn(
+model = get_resnet_cnn(
     data_info["batch_shape"],
     filter_sizes=config["model"]["filter_sizes"],
     dropout_rate=config["model"]["dropout"],
@@ -59,13 +55,13 @@ model.compile(
     metrics=metrics
 )
 weight_counts = get_param_count(model)
-print(f"Trainable weights: {weight_counts['trainable_weights']:,}")
-print(f"Non-trainable weights: {weight_counts['non_trainable_weights']:,}")
 
 # prepare output
 date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 model_id = f"cnn_{date_str}"
-config["meta"] = {"model_id": model_id, **weight_counts}
+if "meta" not in config.keys():
+    config["meta"] = {}
+config["meta"].update({"model_id": model_id, **weight_counts})
 print(f"Model ID: {model_id}")
 
 model_dir = paths["output"] / "2d" / model_id
@@ -75,6 +71,7 @@ callbacks = [
     keras.callbacks.EarlyStopping(patience=config["training"]["patience"]),
 ]
 
+# go!
 fit_and_evaluate(
     model=model,
     config=config,

@@ -10,12 +10,14 @@ import tensorflow as tf
 from cancer_ml.plotting import set_seaborn
 
 # params
-DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_uint8_val15_test15_512-512")
+DSET_FOLDER = Path("/Users/mathis/Code/private_projects/cancer_ml/results/datasets/2d/samples500_uint8_val15_test15_128-128")
 
 # go!
 i_sample = np.random.choice(100)
 
 train_ds = tf.data.Dataset.load(str(DSET_FOLDER / "train"))
+print(train_ds.cardinality())
+
 X, y = next(iter(train_ds.skip(i_sample).take(1)))
 print(X.shape)
 print(y.shape)
